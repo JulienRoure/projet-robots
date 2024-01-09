@@ -24,3 +24,32 @@ Dans un entrepôt fictif, acheminer des colis d'un point A à un point B grâce 
 - Localiser les robots :
     - Les robots se localisent eux-mêmes ? Ou système de localisation centralisé ?
 
+
+
+On développe qu'une partie du robot (pas le chassis mais le code)
+
+On développe pas l'entrepôt
+
+De quel état part le système ?
+
+Comment l'utilisateur intéragit ? Qu'est ce qui se déclenche ?
+
+
+
+
+
+But :
+
+* Le système doit pouvoir livrer les commandes d'un client.
+* Le système doit pouvoir récolter et enregistrer des commandes.
+* Le système doit pouvoir informer le client que la commande a été livrée ou si elle est en rupture de stock.
+
+De quel état part le système ?
+* A l'état initial, le système est juste en mode attente. Il ne se passe rien en attendant la première commande.
+
+Comment l'utilisateur intéragit ?
+* L'utilisateur donne une liste de commandes à réaliser.
+
+Qu'est ce qui se déclenche ?
+* Le système se met en marche pour honorer les commandes.
+
