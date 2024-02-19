@@ -2,6 +2,11 @@ import pygame
 import math
 import numpy as np
 from time import sleep
+from random import random
+
+speed = 3
+
+zones = {"Zone 1": (1, 2), "Zone 2": (3, 2), "Colis S1.1": [(0, 6), (2, 6)], "Colis S1.2": [(0, 7), (2, 7)], "Colis S1.3": [(0, 8), (2, 8)], "Colis S1.4": [(0, 9), (2, 9)], "Colis S2.1": [(2, 6), (4, 6)], "Colis S2.2": [(2, 7), (4, 7)], "Colis S2.3": [(2, 8), (4, 8)], "Colis S2.4": [(2, 9), (4, 9)], "Colis S3.1": [(4, 6), (6, 6)], "Colis S3.2": [(4, 7), (6, 7)], "Colis S3.3": [(4, 8), (6, 8)], "Colis S3.4": [(4, 9), (6, 9)], "Colis S4.1": [(6, 6), (8, 6)], "Colis S4.2": [(6, 7), (8, 7)], "Colis S4.3": [(6, 8), (8, 8)], "Colis S4.4": [(6, 9), (8, 9)]}
 
 # Initialisation de Pygame
 pygame.init()
@@ -17,6 +22,61 @@ walls = [pygame.Rect(600, 100 , 400, 100),
 stock_1 = [pygame.Rect(100, 100, 200, 100)]
 stock_2 = [pygame.Rect(100, 300, 200, 100)]
 waiting_zone = [pygame.Rect(100, 500, 100, 300)]
+
+def write_names():
+    font = pygame.font.Font('freesansbold.ttf', 24)
+    allee_1 = []
+    allee_2 = []
+    allee_3 = []
+    allee_4 = []
+
+    for i in range(1,5):
+        name = 'S1.' + str(i)
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,150)
+        allee_1.append([textName,textRect])
+
+    for i in range(1,5):
+        name = 'S2.' + str(i)
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,350)
+        allee_2.append([textName,textRect])
+
+    for i in range(1,5):
+        name = 'S3.' + str(i)
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,550)
+        allee_3.append([textName,textRect])
+
+    for i in range(1,5):
+        name = 'S4.' + str(i)
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,750)
+        allee_4.append([textName,textRect])
+
+    zones = []
+
+    name = 'Zone 1'
+    textName = font.render(name, True, 'white', 'red')
+    textRect = textName.get_rect()
+    textRect.center = (150,150)
+    zones.append([textName,textRect])
+
+    name = 'Zone 2'
+    textName = font.render(name, True, 'white', 'orange')
+    textRect = textName.get_rect()
+    textRect.center = (150,350)
+    zones.append([textName,textRect])
+
+    return [allee_1, allee_2, allee_3, allee_4, zones]
 
 def draw_grid():
     # Couleur de la grille
@@ -68,6 +128,8 @@ class Robot:
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
         self.targets = []
         self.end_chemin = True
+        self.end_test = False
+        self.where = []
 
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action
@@ -176,7 +238,7 @@ def makeMap(coord, color):
     for rect in coord:
         pygame.draw.rect(screen, color, rect)
 
-def reach_angle(robot, angle_start):
+def reach_angle(robot, angle_start, mode):
     angle_diff = (abs(robot.angle_target - robot.angle)) % 360
     angle_diff_start = (abs(robot.angle_target - angle_start)) % 360
     if angle_diff > 180:
@@ -192,11 +254,15 @@ def reach_angle(robot, angle_start):
             robot.update("droite")
     else:
         robot.moving = False
+        robot.end_test = True
         if robot.current_speed_left == 0 and robot.current_speed_right == 0:
             robot.angle = robot.angle_target
             if not robot.end_chemin and robot.path == []:
-                sleep(1)
                 robot.end_chemin = True
+                robot.angle_start = robot.angle % 360
+                if mode == "colis":
+                    robot.where.pop(0)
+                sleep(1/speed)
                 
         
 
@@ -214,11 +280,11 @@ def reach_position(robot, position_start):
             robot.turn = True
             robot.end = True
 
-def move(robot, case, position_start, angle_start):
+def move(robot, case, position_start, angle_start, mode):
     #robot.angle_target = 45*case
     #robot.position_target = (position_start[0] + 50*math.cos(case*math.pi/4), position_start[1] - 50*math.sin(case*math.pi/4))
     if robot.turn:
-        reach_angle(robot, angle_start)
+        reach_angle(robot, angle_start, mode)
         if robot.target_speed_left == 0 and robot.target_speed_right == 0:
             robot.turn = False
             robot.moving = True
@@ -273,21 +339,26 @@ def chemin(robot, mode):
         robot.angle_target = 45*robot.path[0]
         robot.position_target = (robot.position_start[0] + c*100*ind(robot.path[0])[0], robot.position_start[1] - c*100*ind(robot.path[0])[1])
         if not robot.end:
-            move(robot, robot.path[0], robot.position_start, robot.angle_start)
+            move(robot, robot.path[0], robot.position_start, robot.angle_start, mode)
         else:
             robot.path = robot.path[c:]
             robot.angle_start = robot.angle % 360
             robot.position_start = (robot.position[0], robot.position[1])
             robot.end = False
     else:
-        if mode == "colis":
+        if mode == "colis 1":
             robot.angle_target = 90
             robot.angle_start = 0
-            reach_angle(robot, robot.angle_start)
-        if mode == "stock":
-            robot.angle_target = 0
-            robot.angle_start = 90
-            reach_angle(robot, robot.angle_start)
+            reach_angle(robot, robot.angle_start, "colis")
+        elif mode == "colis 2":
+            robot.angle_target = 270
+            robot.angle_start = 0
+            reach_angle(robot, robot.angle_start, "colis")
+        elif mode == "stock":
+            robot.angle_target = 180
+            if not robot.moving and not robot.end_test:
+                robot.angle_start = robot.angle % 360
+            reach_angle(robot, robot.angle_start, "stock")
     
 def position_to_case(robot):
     return (int(robot.position[1] / 100), int(robot.position[0] / 100))
@@ -383,9 +454,30 @@ def suite_coords(robot):
         dijkstra_path(robot, robot.targets.pop(0))
         robot.end_chemin = False
 
+def coords_commandes(robot, commandes):
+    new_commandes = []
+    where = []
+    for c in commandes:
+        if random() > 0.5:
+            new_commandes.append(zones[c[0]][0])
+            where.append(1)
+        else:
+            new_commandes.append(zones[c[0]][1])
+            where.append(2)
+        new_commandes.append(zones[c[1]])
+    return new_commandes, where
+
+
 def main():
     robot1 = Robot("robot.png", (150, 550), 0)
-    robot1.targets = [(8, 9), (0, 0)]
+
+    commandes = coords_commandes(robot1, [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2")])
+    print(commandes[0])
+    robot1.targets = commandes[0]
+    robot1.where = commandes[1]
+
+    #robot1.path = [2, 1, 1, 1, 0]
+    #robot1.targets = [(0, 6)]
     #robot2 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 650), 0)
     #robot3 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 750), 0)
     #robots = [robot1, robot2, robot3]
@@ -403,6 +495,19 @@ def main():
         makeMap(stock_1, "red")  
         makeMap(stock_2,"orange")
         makeMap(waiting_zone,"blue")
+
+        allTexts = write_names()
+
+        for text in allTexts[0]:
+            screen.blit(text[0], text[1])
+        for text in allTexts[1]:
+            screen.blit(text[0], text[1])
+        for text in allTexts[2]:
+            screen.blit(text[0], text[1])
+        for text in allTexts[3]:
+            screen.blit(text[0], text[1])
+        for text in allTexts[4]:
+            screen.blit(text[0], text[1])
 
         # Gestion des événements
         for event in pygame.event.get():
@@ -445,12 +550,20 @@ def main():
             #move(robot, 2, (500, 500), 0)
             #print(robot.end)
             #print(robot.moving)
+                
+            #print(robot.where[0])
+            #print(robot.targets[0])
+            suite_coords(robot)
+
             if len(robot.targets) % 2 == 1:
-                chemin(robot, "colis")
+                if robot.where[0] == 0:
+                    chemin(robot, "colis 1")
+                else:
+                    chemin(robot, "colis 2")
             else:
                 chemin(robot, "stock")
             #dijkstra_path(robot, (8, 9))
-            suite_coords(robot)
+            
             #print(impossible_move(robot, (3, 5), (4, 6)))
             #print(dijkstra(robot, (0, 0)))
             #print(around(2, 3))
@@ -485,7 +598,7 @@ def main():
         draw_grid()
         
         pygame.display.flip()
-        clock.tick(180)  # Limite la boucle à 60 images par seconde pour une animation fluide
+        clock.tick(speed*60)  # Limite la boucle à 60 images par seconde pour une animation fluide
 
     pygame.quit()
 
