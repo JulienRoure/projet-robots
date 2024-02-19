@@ -195,8 +195,9 @@ def reach_angle(robot, angle_start):
         if robot.current_speed_left == 0 and robot.current_speed_right == 0:
             robot.angle = robot.angle_target
             if not robot.end_chemin and robot.path == []:
-                robot.end_chemin = True
                 sleep(1)
+                robot.end_chemin = True
+                
         
 
 def reach_position(robot, position_start):
@@ -383,7 +384,7 @@ def suite_coords(robot):
         robot.end_chemin = False
 
 def main():
-    robot1 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 550), 0)
+    robot1 = Robot("robot.png", (150, 550), 0)
     robot1.targets = [(8, 9), (0, 0)]
     #robot2 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 650), 0)
     #robot3 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 750), 0)
