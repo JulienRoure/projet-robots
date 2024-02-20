@@ -381,8 +381,10 @@ def chemin(robot, mode):
                 robot.angle_start = robot.angle % 360
             reach_angle(robot, robot.angle_start, "stock")
     
-def position_to_case(robot):
-    return (int(robot.position[1] / 100), int(robot.position[0] / 100))
+def position_to_case(robot, pos = None):
+    if pos == None:
+        pos = robot.position
+    return (int(pos[1] / 100), int(pos[0] / 100))
 
 def around(i, j):
     if i == 0 and j == 0:
@@ -442,9 +444,10 @@ def dijkstra(robot, reach):
                 deja_vu.append(here)
     return G
 
-def dijkstra_path(robot, reach):
+def dijkstra_path(robot, reach, start = None):
     G = dijkstra(robot, reach)
-    start = position_to_case(robot)
+    if start == None:
+        start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
     if robot.path == []:
         P = []
@@ -476,10 +479,23 @@ def suite_coords(robot):
     if robot.path == [] and robot.targets != [] and robot.end_chemin:
         dijkstra_path(robot, robot.targets.pop(0))
         robot.end_chemin = False
+    if robot.path != [] and robot.targets != [] and robot.end_chemin and not robot.moving:
+        dijkstra_path(robot, robot.targets[0])
+
+
+def min_index(L):
+    m = L[0]
+    index = 0
+    for i in range(len(L)):
+        if L[i] < m:
+            m = L[i]
+            index = i
+    return index
 
 def coords_commandes(robot, commandes):
     new_commandes = []
     where = []
+    zone = ""
     if commandes != []:
         d1 = dijkstra_path(robot, zones[commandes[0][0]][0])
         robot.path = []
@@ -491,8 +507,33 @@ def coords_commandes(robot, commandes):
         else:
             new_commandes.append(zones[commandes[0][0]][1])
             where.append(2)
-        new_commandes.append(zones[commandes[0][1]])
+        zone = commandes[0][1]
         commandes.pop(0)
+    D = []
+    for i in range(min(len(commandes), 3)):
+        if commandes[i][1] == zone:
+            d1 = dijkstra_path(robot, zones[commandes[i][0]][0], new_commandes[0])
+            robot.path = []
+            d2 = dijkstra_path(robot, zones[commandes[i][0]][1], new_commandes[0])
+            robot.path = []
+            D.append(min(d1, d2))
+        else:
+            D.append(100)
+    if D != []:
+        index = min_index(D)
+        if commandes[index][1] == zone:
+            d1 = dijkstra_path(robot, zones[commandes[index][0]][0], new_commandes[0])
+            robot.path = []
+            d2 = dijkstra_path(robot, zones[commandes[index][0]][1], new_commandes[0])
+            robot.path = []
+            if d2 > d1:
+                new_commandes.append(zones[commandes[index][0]][0])
+                where.append(1)
+            else:
+                new_commandes.append(zones[commandes[index][0]][1])
+                where.append(2)
+            commandes.pop(index)
+        new_commandes.append(zones[zone])
     return new_commandes, where
 
 
@@ -500,7 +541,6 @@ def main():
     robot1 = Robot("robot.png", (150, 550), 0)
 
     commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S3.2", "Zone 2"), ("Colis S1.3", "Zone 1")]
-
     #robot1.path = [2, 1, 1, 1, 0]
     #robot1.targets = [(0, 6)]
     robot2 = Robot("robot.png", (150, 650), 0)
@@ -541,22 +581,6 @@ def main():
             
         for robot in robots:
             robot.moving = False  # Réinitialisation de la variable moving
-
-            #reach_angle(robot, 0)
-
-            #robot.position_target = (500, 550)
-            #reach_position(robot, (500, 500))
-            
-            #robot.angle_target = 45
-            #reach_angle(robot, robot.angle_start)
-
-
-            #move(robot, 2, (500, 500), 0)
-            #print(robot.end)
-            #print(robot.moving)
-                
-            #print(robot.where[0])
-            #print(robot.targets[0])
                 
             if robot.targets == [] and robot.decharge:
                 robot.targets, robot.where = coords_commandes(robot, commandes)
@@ -564,23 +588,13 @@ def main():
 
             suite_coords(robot)
 
-            if len(robot.targets) == 1:
+            if len(robot.targets) == 1 or len(robot.targets) == 2:
                 if robot.where[0] == 2:
                     chemin(robot, "colis 1")
                 else:
                     chemin(robot, "colis 2")
             else:
                 chemin(robot, "stock")
-            #dijkstra_path(robot, (8, 9))
-            
-            #print(impossible_move(robot, (3, 5), (4, 6)))
-            #print(dijkstra(robot, (0, 0)))
-            #print(around(2, 3))
-            #print(robot.position_target)
-            #print(robot.position)
-            #print(robot.angle_target)
-            #print(robot.end)
-
 
             if not robot.moving:
                 if robot.target_speed_left > 0.01:
@@ -596,12 +610,10 @@ def main():
                 else:
                     robot.target_speed_right = 0
 
-            
-            #robot.angle_target = 45
-            
-            
-            
             robot.collision(walls)
+            for other_robot in robots:
+                if other_robot != robot:
+                    robot.collision([other_robot.rect])
             robot.apply_pid()
             robot.draw()
         draw_grid()
