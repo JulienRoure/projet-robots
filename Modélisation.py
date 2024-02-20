@@ -132,6 +132,8 @@ class Robot:
         self.where = []
         self.decharge = True
 
+        self.nb_packages = 0
+
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action
         power = 0.01
@@ -199,6 +201,14 @@ class Robot:
         screen.blit(rotated_image, new_rect.topleft)
         self.rect = pygame.Rect(self.position[0]-35, self.position[1]-35, 70, 70)
 
+        pygame.draw.circle(screen, (255, 0, 165), self.rect.center, 20)  # Cercle rose plein avec un rayon de 20 pixels
+
+        # Écrire le nombre de colis dans le cercle
+        font = pygame.font.Font(None, 24)
+        text = font.render(str(self.nb_packages), True, (255, 255, 255))  # Couleur blanche
+        text_rect = text.get_rect(center=self.rect.center)
+        screen.blit(text, text_rect)
+
     def collision(self, obstacles):
         for obstacle in obstacles:
             if self.rect.colliderect(obstacle):
@@ -263,6 +273,9 @@ def reach_angle(robot, angle_start, mode):
                 robot.angle_start = robot.angle % 360
                 if mode == "colis":
                     robot.where.pop(0)
+                    robot.nb_packages+=1
+                else:
+                    robot.nb_packages=0
                 if robot.targets == []:
                     robot.decharge = True
                 sleep(1/speed)
