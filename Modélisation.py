@@ -201,7 +201,12 @@ class Robot:
         screen.blit(rotated_image, new_rect.topleft)
         self.rect = pygame.Rect(self.position[0]-35, self.position[1]-35, 70, 70)
 
-        pygame.draw.circle(screen, (255, 0, 165), self.rect.center, 20)  # Cercle rose plein avec un rayon de 20 pixels
+        if self.nb_packages == 0:
+            pygame.draw.circle(screen, (0, 128, 0), self.rect.center, 20)  # Cercle vert plein avec un rayon de 20 pixels
+        if self.nb_packages == 1:
+            pygame.draw.circle(screen, (255, 165, 0), self.rect.center, 20)  # Cercle orange plein avec un rayon de 20 pixels
+        if self.nb_packages == 2:
+            pygame.draw.circle(screen, (255, 0, 0), self.rect.center, 20)  # Cercle rose plein avec un rayon de 20 pixels
 
         # Écrire le nombre de colis dans le cercle
         font = pygame.font.Font(None, 24)
