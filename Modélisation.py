@@ -4,7 +4,7 @@ import numpy as np
 from time import sleep
 from random import random
 
-speed = 3
+speed = 10
 
 zones = {"Zone 1": (1, 2), "Zone 2": (3, 2), "Colis S1.1": [(0, 6), (2, 6)], "Colis S1.2": [(0, 7), (2, 7)], "Colis S1.3": [(0, 8), (2, 8)], "Colis S1.4": [(0, 9), (2, 9)], "Colis S2.1": [(2, 6), (4, 6)], "Colis S2.2": [(2, 7), (4, 7)], "Colis S2.3": [(2, 8), (4, 8)], "Colis S2.4": [(2, 9), (4, 9)], "Colis S3.1": [(4, 6), (6, 6)], "Colis S3.2": [(4, 7), (6, 7)], "Colis S3.3": [(4, 8), (6, 8)], "Colis S3.4": [(4, 9), (6, 9)], "Colis S4.1": [(6, 6), (8, 6)], "Colis S4.2": [(6, 7), (8, 7)], "Colis S4.3": [(6, 8), (8, 8)], "Colis S4.4": [(6, 9), (8, 9)]}
 
@@ -130,6 +130,9 @@ class Robot:
         self.end_chemin = True
         self.end_test = False
         self.where = []
+        self.decharge = True
+
+        self.nb_packages = 0
 
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action
@@ -198,6 +201,14 @@ class Robot:
         screen.blit(rotated_image, new_rect.topleft)
         self.rect = pygame.Rect(self.position[0]-35, self.position[1]-35, 70, 70)
 
+        pygame.draw.circle(screen, (255, 0, 165), self.rect.center, 20)  # Cercle rose plein avec un rayon de 20 pixels
+
+        # Écrire le nombre de colis dans le cercle
+        font = pygame.font.Font(None, 24)
+        text = font.render(str(self.nb_packages), True, (255, 255, 255))  # Couleur blanche
+        text_rect = text.get_rect(center=self.rect.center)
+        screen.blit(text, text_rect)
+
     def collision(self, obstacles):
         for obstacle in obstacles:
             if self.rect.colliderect(obstacle):
@@ -262,6 +273,11 @@ def reach_angle(robot, angle_start, mode):
                 robot.angle_start = robot.angle % 360
                 if mode == "colis":
                     robot.where.pop(0)
+                    robot.nb_packages+=1
+                else:
+                    robot.nb_packages=0
+                if robot.targets == []:
+                    robot.decharge = True
                 sleep(1/speed)
                 
         
@@ -422,12 +438,13 @@ def dijkstra(robot, reach):
     return G
 
 def dijkstra_path(robot, reach):
+    G = dijkstra(robot, reach)
+    start = position_to_case(robot)
+    distance_start = G[start[0]][start[1]]
     if robot.path == []:
-        G = dijkstra(robot, reach)
         P = []
-        start = position_to_case(robot)
         next = 0
-        distance = G[start[0], start[1]]
+        distance = G[start[0]][start[1]]
         while distance != 0:
             test = True
             if robot.path != []:
@@ -448,6 +465,7 @@ def dijkstra_path(robot, reach):
                         robot.path.append(inv_ind(next[1] - start[1], next[0] - start[0]))
                         start = next
             test = True
+    return distance_start
 
 def suite_coords(robot):
     if robot.path == [] and robot.targets != [] and robot.end_chemin:
@@ -457,24 +475,26 @@ def suite_coords(robot):
 def coords_commandes(robot, commandes):
     new_commandes = []
     where = []
-    for c in commandes:
-        if random() > 0.5:
-            new_commandes.append(zones[c[0]][0])
+    if commandes != []:
+        d1 = dijkstra_path(robot, zones[commandes[0][0]][0])
+        robot.path = []
+        d2 = dijkstra_path(robot, zones[commandes[0][0]][1])
+        robot.path = []
+        if d2 > d1:
+            new_commandes.append(zones[commandes[0][0]][0])
             where.append(1)
         else:
-            new_commandes.append(zones[c[0]][1])
+            new_commandes.append(zones[commandes[0][0]][1])
             where.append(2)
-        new_commandes.append(zones[c[1]])
+        new_commandes.append(zones[commandes[0][1]])
+        commandes.pop(0)
     return new_commandes, where
 
 
 def main():
     robot1 = Robot("robot.png", (150, 550), 0)
 
-    commandes = coords_commandes(robot1, [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2")])
-    print(commandes[0])
-    robot1.targets = commandes[0]
-    robot1.where = commandes[1]
+    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2")]
 
     #robot1.path = [2, 1, 1, 1, 0]
     #robot1.targets = [(0, 6)]
@@ -517,27 +537,6 @@ def main():
         for robot in robots:
             robot.moving = False  # Réinitialisation de la variable moving
 
-            # Gestion des commandes de mouvement basées sur les touches pressées
-            keys = pygame.key.get_pressed()
-            
-            if keys[pygame.K_UP] and keys[pygame.K_LEFT]:
-                robot.update("gauche_avancer")
-            if keys[pygame.K_UP] and keys[pygame.K_RIGHT]:
-                robot.update("droite_avancer")
-            if keys[pygame.K_DOWN] and keys[pygame.K_LEFT]:
-                robot.update("gauche_reculer")
-            if keys[pygame.K_DOWN] and keys[pygame.K_RIGHT]:
-                robot.update("droite_reculer")
-            if keys[pygame.K_UP]:
-                robot.update("avancer")
-            if keys[pygame.K_DOWN]:
-                robot.update("reculer")
-            if keys[pygame.K_LEFT]:
-                robot.update("gauche")
-            if keys[pygame.K_RIGHT]:
-                robot.update("droite")
-
-            #robot.angle_target = 90
             #reach_angle(robot, 0)
 
             #robot.position_target = (500, 550)
@@ -553,10 +552,15 @@ def main():
                 
             #print(robot.where[0])
             #print(robot.targets[0])
+                
+            if robot.targets == [] and robot.decharge:
+                robot.targets, robot.where = coords_commandes(robot, commandes)
+                robot.decharge = False
+
             suite_coords(robot)
 
-            if len(robot.targets) % 2 == 1:
-                if robot.where[0] == 0:
+            if len(robot.targets) == 1:
+                if robot.where[0] == 2:
                     chemin(robot, "colis 1")
                 else:
                     chemin(robot, "colis 2")
