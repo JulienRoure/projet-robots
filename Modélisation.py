@@ -499,15 +499,15 @@ def coords_commandes(robot, commandes):
 def main():
     robot1 = Robot("robot.png", (150, 550), 0)
 
-    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2")]
+    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S3.2", "Zone 2"), ("Colis S1.3", "Zone 1")]
 
     #robot1.path = [2, 1, 1, 1, 0]
     #robot1.targets = [(0, 6)]
-    #robot2 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 650), 0)
-    #robot3 = Robot("C:/Users/tomdu/OneDrive/Bureau/Centrale/SEC/Projet Commande/robot.png", (150, 750), 0)
+    robot2 = Robot("robot.png", (150, 650), 0)
+    robot3 = Robot("robot.png", (150, 750), 0)
     #robots = [robot1, robot2, robot3]
     #robot1.path = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3]
-    robots = [robot1]
+    robots = [robot1, robot2, robot3]
     #robot2.path = [1, 2, 5, 5, 3, 1, 0, 7, 6, 4, 2, 0]
     #robot3.path = [2, 3, 6, 6, 4, 2, 1, 0, 7, 5, 3, 1]
     clock = pygame.time.Clock()
