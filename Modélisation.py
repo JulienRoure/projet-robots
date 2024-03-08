@@ -90,7 +90,8 @@ def draw_grid():
         pygame.draw.line(screen, color, (0, y), (screen_width, y), thickness)
 
 class Robot:
-    def __init__(self, image_path, initial_position, initial_angle):
+    def __init__(self, image_path, initial_position, initial_angle, id):
+        self.id = id
         self.rect = pygame.Rect(initial_position[0], initial_position[1], 1, 1)
         self.image = pygame.transform.scale(pygame.image.load(image_path), (70, 70))
         self.position = pygame.Vector2(initial_position)
@@ -121,7 +122,7 @@ class Robot:
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 2, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                              [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                              [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -131,8 +132,12 @@ class Robot:
         self.end_test = False
         self.where = []
         self.decharge = True
-
         self.nb_packages = 0
+        self.current = []
+        self.state = ""
+        self.destination = (0, 0)
+        self.can_move = True
+        self.blocked = False
 
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action
@@ -277,7 +282,6 @@ def reach_angle(robot, angle_start, mode):
                 robot.end_chemin = True
                 robot.angle_start = robot.angle % 360
                 if mode == "colis":
-                    robot.where.pop(0)
                     robot.nb_packages+=1
                 else:
                     robot.nb_packages=0
@@ -300,6 +304,7 @@ def reach_position(robot, position_start):
             robot.position = [robot.position_target[0], robot.position_target[1]]
             robot.turn = True
             robot.end = True
+            #robot.path = []
 
 def move(robot, case, position_start, angle_start, mode):
     #robot.angle_target = 45*case
@@ -330,6 +335,25 @@ def ind(case):
         return (0, -1)
     elif c == 7:
         return (1, -1)
+    
+def ind_map(case):
+    c = case % 8
+    if c == 0:
+        return (0, 1)
+    elif c == 1:
+        return (-1, 1)
+    elif c == 2:
+        return (-1, 0)
+    elif c == 3:
+        return (-1, -1)
+    elif c == 4:
+        return (0, -1)
+    elif c == 5:
+        return (1, -1)
+    elif c == 6:
+        return (1, 0)
+    elif c == 7:
+        return (1, 1)
     
 def inv_ind(i, j):
     if i == 1 and j == 0:
@@ -368,11 +392,11 @@ def chemin(robot, mode):
             robot.end = False
     else:
         if mode == "colis 1":
-            robot.angle_target = 90
+            robot.angle_target = 270
             robot.angle_start = 0
             reach_angle(robot, robot.angle_start, "colis")
         elif mode == "colis 2":
-            robot.angle_target = 270
+            robot.angle_target = 90
             robot.angle_start = 0
             reach_angle(robot, robot.angle_start, "colis")
         elif mode == "stock":
@@ -380,6 +404,11 @@ def chemin(robot, mode):
             if not robot.moving and not robot.end_test:
                 robot.angle_start = robot.angle % 360
             reach_angle(robot, robot.angle_start, "stock")
+        elif mode == "fin":
+            robot.angle_target = 0
+            if not robot.moving and not robot.end_test:
+                robot.angle_start = robot.angle % 360
+            reach_angle(robot, robot.angle_start, "fin")
     
 def position_to_case(robot, pos = None):
     if pos == None:
@@ -424,14 +453,17 @@ def impossible_move(robot, start, end):
 def dijkstra(robot, reach):
     n = 10
     G = np.array([[99 for i in range(n)] for j in range(n)])
-    G[reach[0], reach[1]] = 0
-    here = reach
-    visit = [reach]
-    deja_vu = [reach]
     for i in range(n):
         for j in range(n):
             if robot.map[i][j] == 1:
                 G[i][j] = 100
+    if G[reach[0], reach[1]] == 100:
+        robot.can_move = False
+        return G
+    G[reach[0], reach[1]] = 0
+    here = reach
+    visit = [reach]
+    deja_vu = [reach]
     while visit != []:
         here = visit.pop(0)
         for points in around(here[0], here[1]):
@@ -449,6 +481,9 @@ def dijkstra_path(robot, reach, start = None):
     if start == None:
         start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
+    if distance_start > 50:
+        robot.blocked = True
+        return 100
     if robot.path == []:
         P = []
         next = 0
@@ -464,6 +499,7 @@ def dijkstra_path(robot, reach, start = None):
                         robot.path.append(inv_ind(next[1] - start[1], next[0] - start[0]))
                         start = next
                         test = False
+                        break
             if test:
                 for points in around(start[0], start[1]):
                     if G[points[0], points[1]] == distance - 1:
@@ -472,16 +508,23 @@ def dijkstra_path(robot, reach, start = None):
                         distance -= 1
                         robot.path.append(inv_ind(next[1] - start[1], next[0] - start[0]))
                         start = next
+                        break
             test = True
+    robot.can_move = True
+    robot.blocked = False
     return distance_start
 
 def suite_coords(robot):
     if robot.path == [] and robot.targets != [] and robot.end_chemin:
-        dijkstra_path(robot, robot.targets.pop(0))
-        robot.end_chemin = False
+        robot.destination = robot.targets.pop(0)
+        d = dijkstra_path(robot, robot.destination)
+        if d != 100:
+            robot.state = robot.current.pop(0)
+            robot.end_chemin = False
+        else:
+            robot.targets.append(robot.destination)
     if robot.path != [] and robot.targets != [] and robot.end_chemin and not robot.moving:
         dijkstra_path(robot, robot.targets[0])
-
 
 def min_index(L):
     m = L[0]
@@ -494,24 +537,24 @@ def min_index(L):
 
 def coords_commandes(robot, commandes):
     new_commandes = []
-    where = []
+    current = []
     zone = ""
     if commandes != []:
         d1 = dijkstra_path(robot, zones[commandes[0][0]][0])
         robot.path = []
         d2 = dijkstra_path(robot, zones[commandes[0][0]][1])
         robot.path = []
-        if d2 > d1:
+        if d2 > d1 and d1 != 100:
             new_commandes.append(zones[commandes[0][0]][0])
-            where.append(1)
-        else:
+            current.append("colis 1")
+        elif d2 != 100:
             new_commandes.append(zones[commandes[0][0]][1])
-            where.append(2)
+            current.append("colis 2")
         zone = commandes[0][1]
         commandes.pop(0)
     D = []
     for i in range(min(len(commandes), 3)):
-        if commandes[i][1] == zone:
+        if commandes[i][1] == zone and new_commandes != []:
             d1 = dijkstra_path(robot, zones[commandes[i][0]][0], new_commandes[0])
             robot.path = []
             d2 = dijkstra_path(robot, zones[commandes[i][0]][1], new_commandes[0])
@@ -521,30 +564,72 @@ def coords_commandes(robot, commandes):
             D.append(100)
     if D != []:
         index = min_index(D)
-        if commandes[index][1] == zone:
+        if commandes[index][1] == zone and new_commandes != []:
             d1 = dijkstra_path(robot, zones[commandes[index][0]][0], new_commandes[0])
             robot.path = []
             d2 = dijkstra_path(robot, zones[commandes[index][0]][1], new_commandes[0])
             robot.path = []
-            if d2 > d1:
+            if d2 > d1 and d1 != 100:
                 new_commandes.append(zones[commandes[index][0]][0])
-                where.append(1)
-            else:
+                current.append("colis 1")
+            elif d2 != 100:
                 new_commandes.append(zones[commandes[index][0]][1])
-                where.append(2)
+                current.append("colis 2")
             commandes.pop(index)
+    if new_commandes != []:
         new_commandes.append(zones[zone])
-    return new_commandes, where
+        current.append("stock")
+    else:
+        new_commandes = [(4 + robot.id, 1)]
+        current = ["fin"]
+    return new_commandes, current
+
+def update_map(robot, robots):
+    robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    for other_robot in robots:
+        if other_robot != robot:
+            pos = position_to_case(other_robot)
+            robot.map[pos[0]][pos[1]] = 1
+            if other_robot.path != []:
+                path = other_robot.path[0]
+                direction = ind_map(path)
+                count = 1
+                pos = (pos[0] + direction[0], pos[1] + direction[1])
+                if pos[0] < 10 and pos[1] < 10 and pos[0] >= 0 and pos[1] >= 0: 
+                    robot.map[pos[0]][pos[1]] = 1
+                while count < len(other_robot.path) and path == other_robot.path[count]:
+                    pos = (pos[0] + direction[0], pos[1] + direction[1])
+                    if pos[0] < 10 and pos[1] < 10 and pos[0] >= 0 and pos[1] >= 0:
+                        robot.map[pos[0]][pos[1]] = 1
+                    count += 1
+            if other_robot.destination[1] >= 6:
+                line = other_robot.destination[0]
+                robot.map[line][6] = 1
+                robot.map[line][7] = 1
+                robot.map[line][8] = 1
+                robot.map[line][9] = 1
+            
 
 
 def main():
-    robot1 = Robot("robot.png", (150, 550), 0)
+    tick = 0
+    grille = True
+    robot1 = Robot("robot.png", (150, 550), 0, 1)
 
-    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.2", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S3.2", "Zone 2"), ("Colis S1.3", "Zone 1")]
+    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.2", "Zone 2"), ("Colis S2.2", "Zone 2"), ("Colis S2.3", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S1.3", "Zone 1"), ("Colis S3.4", "Zone 2"), ("Colis S4.3", "Zone 1"), ("Colis S1.4", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.4", "Zone 1"), ("Colis S4.2", "Zone 2"), ("Colis S1.2", "Zone 1"), ("Colis S3.1", "Zone 2"), ("Colis S2.1", "Zone 1"), ("Colis S4.1", "Zone 2")]
     #robot1.path = [2, 1, 1, 1, 0]
     #robot1.targets = [(0, 6)]
-    robot2 = Robot("robot.png", (150, 650), 0)
-    robot3 = Robot("robot.png", (150, 750), 0)
+    robot2 = Robot("robot.png", (150, 650), 0, 2)
+    robot3 = Robot("robot.png", (150, 750), 0, 3)
     #robots = [robot1, robot2, robot3]
     #robot1.path = [0, 1, 2, 3, 4, 5, 6, 7, 0, 1, 2, 3]
     robots = [robot1, robot2, robot3]
@@ -554,6 +639,7 @@ def main():
     running = True
 
     while running:
+        tick += 1
         screen.fill((255, 255, 255))  # Efface l'écran en le remplissant de blanc
         
         makeMap(walls, "black")
@@ -579,22 +665,25 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
             
+        if tick % 10 == 1:
+            for robot in robots:
+                update_map(robot, robots)
+
         for robot in robots:
+            if tick % 10 == 1:
+                update_map(robot, robots)
             robot.moving = False  # Réinitialisation de la variable moving
-                
-            if robot.targets == [] and robot.decharge:
-                robot.targets, robot.where = coords_commandes(robot, commandes)
+            if robot.targets == [] and robot.decharge and commandes != []:
+                robot.targets, robot.current = coords_commandes(robot, commandes)
                 robot.decharge = False
+            if commandes == []:
+                robot.targets = [(4 + robot.id, 1)]
+                robot.current = ["fin"]
 
             suite_coords(robot)
 
-            if len(robot.targets) == 1 or len(robot.targets) == 2:
-                if robot.where[0] == 2:
-                    chemin(robot, "colis 1")
-                else:
-                    chemin(robot, "colis 2")
-            else:
-                chemin(robot, "stock")
+            if not robot.blocked:
+                chemin(robot, robot.state)
 
             if not robot.moving:
                 if robot.target_speed_left > 0.01:
@@ -616,7 +705,15 @@ def main():
                     robot.collision([other_robot.rect])
             robot.apply_pid()
             robot.draw()
-        draw_grid()
+
+        keys = pygame.key.get_pressed()
+
+        if keys[pygame.K_g]:
+            grille = not grille
+            sleep(0.05)
+
+        if grille:
+            draw_grid()
         
         pygame.display.flip()
         clock.tick(speed*60)  # Limite la boucle à 60 images par seconde pour une animation fluide
