@@ -61,16 +61,18 @@ int main(int argc, char *argv[]) {
     const char *message = "Bonjour, serveur!";
     send(client_socket, message, strlen(message), 0);
 
-    // Exemple de réception de données du serveur
-    char buffer[MAX_BUFFER_SIZE];
-    ssize_t received_bytes = recv(client_socket, buffer, MAX_BUFFER_SIZE - 1, 0);
-    if (received_bytes == -1) {
-        perror("Erreur lors de la réception de données du serveur");
-    } else if (received_bytes == 0) {
-        printf("Le serveur a fermé la connexion\n");
-    } else {
-        buffer[received_bytes] = '\0';
-        printf("Message du serveur : %s\n", buffer);
+    while(1) {
+        // Exemple de réception de données du serveur
+        char buffer[MAX_BUFFER_SIZE];
+        ssize_t received_bytes = recv(client_socket, buffer, MAX_BUFFER_SIZE - 1, 0);
+        if (received_bytes == -1) {
+            perror("Erreur lors de la réception de données du serveur");
+        } else if (received_bytes == 0) {
+            printf("Le serveur a fermé la connexion\n");
+        } else {
+            buffer[received_bytes] = '\0';
+            printf("Message du serveur : %s\n", buffer);
+        }
     }
 
     // Fermeture de la socket
