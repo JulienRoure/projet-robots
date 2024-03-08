@@ -138,6 +138,7 @@ class Robot:
         self.destination = (0, 0)
         self.can_move = True
         self.blocked = False
+        self.dijkstra = True
 
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action
@@ -260,13 +261,13 @@ def makeMap(coord, color):
         pygame.draw.rect(screen, color, rect)
 
 def reach_angle(robot, angle_start, mode):
+    robot.end_test = True
     angle_diff = (abs(robot.angle_target - robot.angle)) % 360
     angle_diff_start = (abs(robot.angle_target - angle_start)) % 360
     if angle_diff > 180:
         angle_diff = 360 - angle_diff
     if angle_diff_start > 180:
         angle_diff_start = 360 - angle_diff_start
-    #print(angle_diff)
     if angle_diff > angle_diff_start/2:
         robot.moving = True
         if (robot.angle_target - robot.angle) % 360 < 180:
@@ -275,7 +276,7 @@ def reach_angle(robot, angle_start, mode):
             robot.update("droite")
     else:
         robot.moving = False
-        robot.end_test = True
+        
         if robot.current_speed_left == 0 and robot.current_speed_right == 0:
             robot.angle = robot.angle_target
             if not robot.end_chemin and robot.path == []:
@@ -304,7 +305,9 @@ def reach_position(robot, position_start):
             robot.position = [robot.position_target[0], robot.position_target[1]]
             robot.turn = True
             robot.end = True
+            robot.end_test = False
             #robot.path = []
+            robot.dijkstra = True
 
 def move(robot, case, position_start, angle_start, mode):
     #robot.angle_target = 45*case
@@ -386,7 +389,7 @@ def chemin(robot, mode):
         if not robot.end:
             move(robot, robot.path[0], robot.position_start, robot.angle_start, mode)
         else:
-            robot.path = robot.path[c:]
+            #robot.path = robot.path[c:]
             robot.angle_start = robot.angle % 360
             robot.position_start = (robot.position[0], robot.position[1])
             robot.end = False
@@ -478,11 +481,15 @@ def dijkstra(robot, reach):
 
 def dijkstra_path(robot, reach, start = None):
     G = dijkstra(robot, reach)
+    if robot.id  == 1:
+        print(G)
+        print(reach)
     if start == None:
         start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
     if distance_start > 50:
         robot.blocked = True
+        robot.path = []
         return 100
     if robot.path == []:
         P = []
@@ -515,8 +522,9 @@ def dijkstra_path(robot, reach, start = None):
     return distance_start
 
 def suite_coords(robot):
-    if robot.path == [] and robot.targets != [] and robot.end_chemin:
-        robot.destination = robot.targets.pop(0)
+    if robot.path == [] and robot.end_chemin:
+        if robot.targets != []:
+            robot.destination = robot.targets.pop(0)
         d = dijkstra_path(robot, robot.destination)
         if d != 100:
             robot.state = robot.current.pop(0)
@@ -525,7 +533,14 @@ def suite_coords(robot):
             robot.targets.append(robot.destination)
     if robot.path != [] and robot.targets != [] and robot.end_chemin and not robot.moving:
         dijkstra_path(robot, robot.targets[0])
-
+    if robot.dijkstra:
+        robot.path = []
+        dijkstra_path(robot, robot.destination)
+        robot.dijkstra = False
+    if robot.blocked and robot.state == "stock":
+        robot.path = []
+        dijkstra_path(robot, robot.destination)
+        
 def min_index(L):
     m = L[0]
     index = 0
@@ -672,6 +687,7 @@ def main():
         for robot in robots:
             if tick % 10 == 1:
                 update_map(robot, robots)
+            
             robot.moving = False  # Réinitialisation de la variable moving
             if robot.targets == [] and robot.decharge and commandes != []:
                 robot.targets, robot.current = coords_commandes(robot, commandes)
