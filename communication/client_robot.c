@@ -69,6 +69,7 @@ int main(int argc, char *argv[]) {
             perror("Erreur lors de la réception de données du serveur");
         } else if (received_bytes == 0) {
             printf("Le serveur a fermé la connexion\n");
+            break;
         } else {
             buffer[received_bytes] = '\0';
             printf("Message du serveur : %s\n", buffer);
