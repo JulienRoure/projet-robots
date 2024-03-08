@@ -13,7 +13,7 @@
 #define READER_PORT 5000 // Serveur = lecteur, client = écrivain
 #define WRITER_PORT 5001 // Serveur = écrivain, client = lecteur
 
-#define NB_MAX_CONNECTIONS 1 // 6 par défaut, car 3 robots * 2
+#define NB_MAX_CONNECTIONS 3
 
 #define CHECKERROR(var,val,msg)     if (var==val) {perror(msg); exit(EXIT_FAILURE);}
 
@@ -79,25 +79,25 @@ int main() {
 
         if (pidFils[i] == 0) {
             // On est dans le fils
-            printf("Je suis le processus fils %d, j'ai été créé en %d-ième.\n", getpid(), i);
+            printf("Je suis le processus fils %d, j'ai été créé en %d-ième.\n", getpid(), i + 1);
             printf("Je suis connecté au client ayant l'adresse IP:Port %s:%d\n", inet_ntoa(clientAddr[i].sin_addr), ntohs(clientAddr[i].sin_port));
 
-            // Différencier le comportement selon le port :
-            // clientAddr[i].sinPort == 5000 ? -> client = écrivain, donc serveur = lecteur
-            // Coder le comportement en tant que lecteur
+            // Indiquer au client son identifiant
+            sprintf(buffer, "Tu es le robot %d", i);
+            send(socketDialogue[i], buffer, strlen(buffer), 0);
 
-            // clientAddr[i].sinPort == 5001 ? -> client = lecteur, donc serveur = écrivain
-            // Coder le comportement en tant que écrivain
-            // Envoyer des données au client
-            strcpy(buffer, "ma super commande");
+            for (int j = 0; j < 5; j++) {
+                sprintf(buffer, "Message n°%d adressé au bureau n°%d", j, i);
+                send(socketDialogue[i], buffer, strlen(buffer), 0);
+            }
 
-            // PB !! Comment savoir sur quelle socket écrire? Quel [i]??? En fonction de l'adresse IP?
-            // send(socketDialogue[i], buffer, strlen(buffer), 0);
-
+            
+            // sleep(10);
+            // printf("Après le wait\n");
             exit(EXIT_SUCCESS);
         } else {
             // On est dans le processus père
-            close(socketDialogue[i]); //fermeture des sockets de dialogue utilisées par le père (possédée par le fils désormais)
+            // close(socketDialogue[i]); //fermeture des sockets de dialogue utilisées par le père (possédée par le fils désormais)
         }
     }
     
