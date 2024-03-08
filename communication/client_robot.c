@@ -9,6 +9,10 @@
 
 #define LOCAL_PORT 6000
 
+void envoiDonnees(int socket, char *buffer) {
+    if (strlen(buffer) != 0) send(socket, buffer, strlen(buffer), 0);
+}
+
 void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
     ssize_t received_bytes = recv(socket, buffer, MAX_BUFFER_SIZE - 1, 0);
     if (received_bytes == -1) {
@@ -30,6 +34,8 @@ int main(int argc, char *argv[]) {
 
     int stopBoucle = 0;
     char bufferReception[MAX_BUFFER_SIZE];
+    char bufferEmission[MAX_BUFFER_SIZE];
+
 
     const char *server_ip = argv[1];
     const int server_port = atoi(argv[2]);
@@ -73,14 +79,12 @@ int main(int argc, char *argv[]) {
 
     printf("Connecté au serveur %s:%d\n", server_ip, server_port);
 
-    // Exemple d'envoi de données au serveur
-    const char *message = "Bonjour, serveur!";
-    send(client_socket, message, strlen(message), 0);
-
-    
-    
+    int compteur = 0;
     while(!stopBoucle) {
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
+        if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!");
+        else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur);
+        envoiDonnees(client_socket, bufferEmission);
     }
 
     // Fermeture de la socket
