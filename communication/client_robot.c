@@ -82,10 +82,10 @@ int main(int argc, char *argv[]) {
     int compteur = 0;
     while(!stopBoucle) {
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
-        if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!");
-        else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur);
+        if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!"); // Pair
+        else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur); // Impair
         
-        if (compteur % 10 == 1) bufferEmission[0] = '\0'; // Tester l'envoi d'une chaîne vide
+        if (compteur == 4) bufferEmission[0] = '\0'; // Tester l'envoi d'une chaîne vide
         envoiDonnees(client_socket, bufferEmission);
         compteur++;
     }
