@@ -85,6 +85,7 @@ int main(int argc, char *argv[]) {
         if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!");
         else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur);
         envoiDonnees(client_socket, bufferEmission);
+        compteur++;
     }
 
     // Fermeture de la socket
