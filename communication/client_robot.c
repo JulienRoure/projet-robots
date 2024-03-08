@@ -9,7 +9,7 @@
 
 #define LOCAL_PORT 6000
 
-int recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
+void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
     ssize_t received_bytes = recv(socket, buffer, MAX_BUFFER_SIZE - 1, 0);
     if (received_bytes == -1) {
         perror("Erreur lors de la réception de données du serveur");
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     
     
     while(!stopBoucle) {
-        recevoirDonnees(client_socket, bufferReception, stopBoucle);
+        recevoirDonnees(client_socket, bufferReception, &stopBoucle);
     }
 
     // Fermeture de la socket
