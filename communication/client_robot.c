@@ -7,6 +7,8 @@
 
 #define MAX_BUFFER_SIZE 1024
 
+#define LOCAL_PORT 6000
+
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <adresse IP du serveur> <port>\n", argv[0]);
@@ -20,6 +22,19 @@ int main(int argc, char *argv[]) {
     int client_socket = socket(AF_INET, SOCK_STREAM, 0);
     if (client_socket == -1) {
         perror("Erreur lors de la création de la socket");
+        exit(EXIT_FAILURE);
+    }
+
+    // Configuration de l'adresse locale (choix du port local)
+    struct sockaddr_in local_address;
+    local_address.sin_family = AF_INET;
+    local_address.sin_port = htons(LOCAL_PORT);
+    local_address.sin_addr.s_addr = INADDR_ANY;
+
+    // Attribution du port local
+    if (bind(client_socket, (struct sockaddr*)&local_address, sizeof(local_address)) == -1) {
+        perror("Erreur lors de l'attribution du port local");
+        close(client_socket);
         exit(EXIT_FAILURE);
     }
 
