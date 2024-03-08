@@ -4,10 +4,12 @@
 #include <unistd.h>
 #include <arpa/inet.h>
 
+#include <time.h>
+
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define MAXCAR  80
+#define MAX_BUFFER_SIZE 1024
 #define LOCALIP "127.0.0.1"
 #define LOCALPORT 3000
 #define READER_PORT 5000 // Serveur = lecteur, client = écrivain
@@ -29,12 +31,37 @@ void write_in_file(char *message, char *nom_fichier) {
     fclose(fichier);
 }
 
+void recevoirDonnees(int socket, char *bufferEmission, int *stopBoucle) {
+    ssize_t received_bytes = recv(socket, bufferEmission, MAX_BUFFER_SIZE - 1, 0);
+    if (received_bytes == -1) {
+        perror("Erreur lors de la réception de données du client");
+    } else if (received_bytes == 0) {
+        printf("Le client a fermé la connexion\n");
+        *stopBoucle = 1;
+    } else {
+        bufferEmission[received_bytes] = '\0';
+        printf("Message reçu sur la socket n°%d ; ", socket);
+        printf("Message du client : %s\n", bufferEmission);
+    }
+}
+
+void attendre_XXns(int nsAttente) {
+    struct timespec attente;
+    attente.tv_sec = 0;
+    attente.tv_nsec = nsAttente;
+
+    if (nanosleep(&attente, NULL) == -1) {
+        perror("Erreur lors de l'attente");
+    }
+}
+
 int main() {
     int socketEcoute, socketDialogue[NB_MAX_CONNECTIONS];
     struct sockaddr_in serverAddr, clientAddr[NB_MAX_CONNECTIONS];
     socklen_t addrSize = sizeof(struct sockaddr_in);
 
-    char buffer[1024];
+    char bufferEmission[MAX_BUFFER_SIZE];
+    char bufferReception[MAX_BUFFER_SIZE];
     pid_t pidFils[NB_MAX_CONNECTIONS]; //Permet de recuperer le pid du processus fils créé
 
     // Créer une socket
@@ -83,12 +110,14 @@ int main() {
             printf("Je suis connecté au client ayant l'adresse IP:Port %s:%d\n", inet_ntoa(clientAddr[i].sin_addr), ntohs(clientAddr[i].sin_port));
 
             // Indiquer au client son identifiant
-            sprintf(buffer, "Tu es le robot %d", i);
-            send(socketDialogue[i], buffer, strlen(buffer), 0);
+            sprintf(bufferEmission, "Tu es le robot %d", i);
+            send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
 
             for (int j = 0; j < 5; j++) {
-                sprintf(buffer, "Message n°%d adressé au bureau n°%d", j, i);
-                send(socketDialogue[i], buffer, strlen(buffer), 0);
+                sprintf(bufferEmission, "Message n°%d adressé au client n°%d\n", j, i);
+                send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
+                recevoirDonnees(socketDialogue[i], bufferReception, NULL);
+                attendre_XXns(50000000); // Odg : attendre 50ms entre deux envois pour pouvoir les distinguer chez le client 
             }
 
             
@@ -112,20 +141,20 @@ int main() {
     // Communication bidirectionnelle avec le client
     while (1) {
         // Recevoir des données du client
-        ssize_t bytesRead = recv(socketDialogue, buffer, sizeof(buffer), 0);
+        ssize_t bytesRead = recv(socketDialogue, bufferEmission, sizeof(bufferEmission), 0);
         if (bytesRead <= 0) {
             perror("Erreur lors de la réception des données");
             break;
         }
 
         // Afficher les données reçues
-        buffer[bytesRead] = '\0';
-        printf("Client dit : %s\n", buffer);
+        bufferEmission[bytesRead] = '\0';
+        printf("Client dit : %s\n", bufferEmission);
 
         // Envoyer des données au client
         printf("Entrez une réponse pour le client : ");
-        fgets(buffer, sizeof(buffer), stdin);
-        send(socketDialogue, buffer, strlen(buffer), 0);
+        fgets(bufferEmission, sizeof(bufferEmission), stdin);
+        send(socketDialogue, bufferEmission, strlen(bufferEmission), 0);
     }
  */
     // Fermer les sockets
