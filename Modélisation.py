@@ -481,9 +481,6 @@ def dijkstra(robot, reach):
 
 def dijkstra_path(robot, reach, start = None):
     G = dijkstra(robot, reach)
-    if robot.id  == 1:
-        print(G)
-        print(reach)
     if start == None:
         start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
@@ -522,7 +519,7 @@ def dijkstra_path(robot, reach, start = None):
     return distance_start
 
 def suite_coords(robot):
-    if robot.path == [] and robot.end_chemin:
+    if robot.path == [] and robot.end_chemin and not position_to_case(robot) == robot.targets[0]:
         if robot.targets != []:
             robot.destination = robot.targets.pop(0)
         d = dijkstra_path(robot, robot.destination)
@@ -692,7 +689,7 @@ def main():
             if robot.targets == [] and robot.decharge and commandes != []:
                 robot.targets, robot.current = coords_commandes(robot, commandes)
                 robot.decharge = False
-            if commandes == []:
+            if commandes == [] and robot.targets == []:
                 robot.targets = [(4 + robot.id, 1)]
                 robot.current = ["fin"]
 
