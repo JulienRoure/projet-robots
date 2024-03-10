@@ -110,7 +110,6 @@ class Robot:
         screen.blit(text, text_rect)
 
     def draw_map(self):
-        print("oui")
         for i in range(10):
             for j in range(10):
                 if self.map[i][j] == 1:

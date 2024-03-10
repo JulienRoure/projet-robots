@@ -39,6 +39,9 @@ def main():
             if event.type == pygame.QUIT:
                 running = False
         
+        if grille:
+            draw_grid()
+
         for robot in robots:
             if robot.id == visu_robot:
                 robot.draw_map()
@@ -141,10 +144,7 @@ def main():
         if pause:
             sleep(0.1)
             continue
-            
-        if grille:
-            draw_grid()
-
+        
         if texts:
             for text in allTexts[0]:
                 screen.blit(text[0], text[1])
