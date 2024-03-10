@@ -1,6 +1,6 @@
 from classe_robot import Robot
 from fonctions import makeMap, draw_grid, update_map, coords_commandes, suite_coords, chemin, write_names
-from global_import import walls, stock_1, stock_2, waiting_zone, screen, speed
+from global_import import walls, stock_1, stock_2, waiting_zone, screen, speed, commandes, colis
 import pygame
 from time import sleep
 
@@ -10,11 +10,15 @@ def main():
     tick = 0
     grille = True
     grille_key_released = True
-    robot1 = Robot("robot.png", (150, 550), 0, 1)
-
-    commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.2", "Zone 2"), ("Colis S2.2", "Zone 2"), ("Colis S2.3", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S1.3", "Zone 1"), ("Colis S3.4", "Zone 2"), ("Colis S4.3", "Zone 1"), ("Colis S1.4", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.4", "Zone 1"), ("Colis S4.2", "Zone 2"), ("Colis S1.2", "Zone 1"), ("Colis S3.1", "Zone 2"), ("Colis S2.1", "Zone 1"), ("Colis S4.1", "Zone 2")]
-    robot2 = Robot("robot.png", (150, 650), 0, 2)
-    robot3 = Robot("robot.png", (150, 750), 0, 3)
+    texts = True
+    texts_key_released = True
+    pause = False
+    pause_key_released = True
+    visu_robot = 0
+    visu_robot_key_released = True
+    robot1 = Robot("robot1.png", (150, 550), 0, 1)
+    robot2 = Robot("robot2.png", (150, 650), 0, 2)
+    robot3 = Robot("robot3.png", (150, 750), 0, 3)
     robots = [robot1, robot2, robot3]
     clock = pygame.time.Clock()
     running = True
@@ -27,25 +31,18 @@ def main():
         makeMap(stock_1, "red")  
         makeMap(stock_2,"orange")
         makeMap(waiting_zone,"blue")
-
-        allTexts = write_names()
-
-        for text in allTexts[0]:
-            screen.blit(text[0], text[1])
-        for text in allTexts[1]:
-            screen.blit(text[0], text[1])
-        for text in allTexts[2]:
-            screen.blit(text[0], text[1])
-        for text in allTexts[3]:
-            screen.blit(text[0], text[1])
-        for text in allTexts[4]:
-            screen.blit(text[0], text[1])
+        
+        allTexts = write_names(colis)
 
         # Gestion des événements
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 running = False
-            
+        
+        for robot in robots:
+            if robot.id == visu_robot:
+                robot.draw_map()
+
         if tick % 10 == 1:
             for robot in robots:
                 update_map(robot, robots)
@@ -53,7 +50,7 @@ def main():
         for robot in robots:
             if tick % 10 == 1:
                 update_map(robot, robots)
-            
+
             robot.moving = False  # Réinitialisation de la variable moving
             if robot.targets == [] and robot.decharge and commandes != []:
                 robot.targets, robot.current = coords_commandes(robot, commandes)
@@ -87,6 +84,8 @@ def main():
                     robot.collision([other_robot.rect])
             robot.move()
             robot.draw()
+            if texts:
+                robot.draw_circle()
 
         keys = pygame.key.get_pressed()
 
@@ -96,9 +95,67 @@ def main():
                 grille_key_released = False
         else:
             grille_key_released = True 
+
+        if keys[pygame.K_t]:
+            if texts_key_released:
+                texts = not texts
+                texts_key_released = False
+        else:
+            texts_key_released = True
+
+        if keys[pygame.K_p]:
+            if pause_key_released:
+                pause = not pause
+                pause_key_released = False
+        else:
+            pause_key_released = True
+
+        if keys[pygame.K_KP0]:
+            if visu_robot_key_released:
+                visu_robot = 0
+                visu_robot_key_released = False
+        else:
+            visu_robot_key_released = True
+
+        if keys[pygame.K_KP1]:
+            if visu_robot_key_released:
+                visu_robot = 1
+                visu_robot_key_released = False
+        else:
+            visu_robot_key_released = True
+        
+        if keys[pygame.K_KP2]:
+            if visu_robot_key_released:
+                visu_robot = 2
+                visu_robot_key_released = False
+        else:
+            visu_robot_key_released = True
+
+        if keys[pygame.K_KP3]:
+            if visu_robot_key_released:
+                visu_robot = 3
+                visu_robot_key_released = False
+        else:
+            visu_robot_key_released = True
+
+        if pause:
+            sleep(0.1)
+            continue
             
         if grille:
             draw_grid()
+
+        if texts:
+            for text in allTexts[0]:
+                screen.blit(text[0], text[1])
+            for text in allTexts[1]:
+                screen.blit(text[0], text[1])
+            for text in allTexts[2]:
+                screen.blit(text[0], text[1])
+            for text in allTexts[3]:
+                screen.blit(text[0], text[1])
+            for text in allTexts[4]:
+                screen.blit(text[0], text[1])
         
         pygame.display.flip()
         clock.tick(speed*60)  # Limite la boucle à 60 images par seconde pour une animation fluide

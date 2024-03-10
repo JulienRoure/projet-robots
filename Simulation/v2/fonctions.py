@@ -1,10 +1,10 @@
-from global_import import screen, screen_width, screen_height, speed, zones
+from global_import import screen, screen_width, screen_height, speed, zones, colis
 import pygame
 import math
 import numpy as np
 from time import sleep
 
-def write_names():
+def write_names(colis):
     font = pygame.font.Font('freesansbold.ttf', 24)
     allee_1 = []
     allee_2 = []
@@ -16,7 +16,15 @@ def write_names():
         textName = font.render(name, True, 'white', 'black')
         textRect = textName.get_rect()
         x = 550+100*i
-        textRect.center = (x,150)
+        textRect.center = (x,140)
+        allee_1.append([textName,textRect])
+    
+    for i in range(1,5):
+        name = str(colis[0][i-1])
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,175)
         allee_1.append([textName,textRect])
 
     for i in range(1,5):
@@ -24,7 +32,15 @@ def write_names():
         textName = font.render(name, True, 'white', 'black')
         textRect = textName.get_rect()
         x = 550+100*i
-        textRect.center = (x,350)
+        textRect.center = (x,340)
+        allee_2.append([textName,textRect])
+
+    for i in range(1,5):
+        name = str(colis[1][i-1])
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,375)
         allee_2.append([textName,textRect])
 
     for i in range(1,5):
@@ -32,16 +48,32 @@ def write_names():
         textName = font.render(name, True, 'white', 'black')
         textRect = textName.get_rect()
         x = 550+100*i
-        textRect.center = (x,550)
+        textRect.center = (x,540)
         allee_3.append([textName,textRect])
+
+    for i in range(1,5):
+        name = str(colis[2][i-1])
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,575)
+        allee_2.append([textName,textRect])
 
     for i in range(1,5):
         name = 'S4.' + str(i)
         textName = font.render(name, True, 'white', 'black')
         textRect = textName.get_rect()
         x = 550+100*i
-        textRect.center = (x,750)
+        textRect.center = (x,740)
         allee_4.append([textName,textRect])
+
+    for i in range(1,5):
+        name = str(colis[3][i-1])
+        textName = font.render(name, True, 'white', 'black')
+        textRect = textName.get_rect()
+        x = 550+100*i
+        textRect.center = (x,775)
+        allee_2.append([textName,textRect])
 
     zones = []
 
@@ -74,6 +106,12 @@ def makeMap(coord, color):
     for rect in coord:
         pygame.draw.rect(screen, color, rect)
 
+def position_to_colis(robot):
+    if robot.state == "colis 1":    
+        return (int(robot.position[1]/200), int(robot.position[0]/100)-6)
+    elif robot.state == "colis 2":
+        return (int(robot.position[1]/200)-1, int(robot.position[0]/100)-6)
+
 def reach_angle(robot, angle_start, mode):
     robot.end_test = True
     angle_diff = (abs(robot.angle_target - robot.angle)) % 360
@@ -97,15 +135,25 @@ def reach_angle(robot, angle_start, mode):
                 robot.end_chemin = True
                 robot.angle_start = robot.angle % 360
                 if mode == "colis":
-                    robot.nb_packages+=1
+                    robot.nb_packages += 1
+                    c = position_to_colis(robot)
+                    colis[c[0]][c[1]] -= 1
+                    if robot.targets[0] == position_to_case(robot):
+                        if robot.state == robot.current[0]:
+                            robot.nb_packages += 1
+                            colis[c[0]][c[1]] -= 1
+                            robot.targets.pop(0)
+                            robot.current.pop(0)
+                        else:
+                            robot.end_chemin = False
+                            robot.state = robot.current.pop(0)
+                            robot.targets.pop(0)
                 else:
-                    robot.nb_packages=0
+                    robot.nb_packages = 0
                 if robot.targets == []:
                     robot.decharge = True
                 sleep(1/speed)
                 
-        
-
 def reach_position(robot, position_start):
     position_diff = math.sqrt((robot.position_target[0] - robot.position[0])**2 + (robot.position_target[1] - robot.position[1])**2)
     position_diff_start = math.sqrt((robot.position_target[0] - position_start[0])**2 + (robot.position_target[1] - position_start[1])**2)
@@ -348,7 +396,7 @@ def suite_coords(robot):
         robot.path = []
         dijkstra_path(robot, robot.destination)
         robot.dijkstra = False
-    if robot.blocked and robot.state == "stock":
+    if robot.blocked:
         robot.path = []
         dijkstra_path(robot, robot.destination)
         
@@ -424,26 +472,30 @@ def update_map(robot, robots):
     for other_robot in robots:
         if other_robot != robot:
             pos = position_to_case(other_robot)
+            pos_start = position_to_case(other_robot, other_robot.position_start)
             robot.map[pos[0]][pos[1]] = 1
             if other_robot.path != []:
                 path = other_robot.path[0]
                 direction = ind_map(path)
                 count = 1
-                pos = (pos[0] + direction[0], pos[1] + direction[1])
-                if pos[0] < 10 and pos[1] < 10 and pos[0] >= 0 and pos[1] >= 0: 
-                    robot.map[pos[0]][pos[1]] = 1
+                pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
+                if pos_start[0] < 10 and pos_start[1] < 10 and pos_start[0] >= 0 and pos_start[1] >= 0: 
+                    robot.map[pos_start[0]][pos_start[1]] = 1
                 while count < len(other_robot.path) and path == other_robot.path[count]:
-                    pos = (pos[0] + direction[0], pos[1] + direction[1])
-                    if pos[0] < 10 and pos[1] < 10 and pos[0] >= 0 and pos[1] >= 0:
-                        robot.map[pos[0]][pos[1]] = 1
+                    pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
+                    if pos_start[0] < 10 and pos_start[1] < 10 and pos_start[0] >= 0 and pos_start[1] >= 0:
+                        robot.map[pos_start[0]][pos_start[1]] = 1
                     count += 1
+                pos_start = position_to_case(other_robot, other_robot.position_start)
+                while pos != pos_start:
+                    robot.map[pos_start[0], pos_start[1]] = 0
+                    pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
             if other_robot.destination[1] >= 6:
                 line = other_robot.destination[0]
                 robot.map[line][6] = 1
                 robot.map[line][7] = 1
                 robot.map[line][8] = 1
                 robot.map[line][9] = 1
-            pos = position_to_case(other_robot)
             if pos[1] >= 6 and pos[0] != 9:
                 line = pos[0]
                 robot.map[line][6] = 1

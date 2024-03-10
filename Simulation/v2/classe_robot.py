@@ -95,6 +95,7 @@ class Robot:
         screen.blit(rotated_image, new_rect.topleft)
         self.rect = pygame.Rect(self.position[0]-35, self.position[1]-35, 70, 70)
 
+    def draw_circle(self):
         if self.nb_packages == 0:
             pygame.draw.circle(screen, (0, 128, 0), self.rect.center, 20)  # Cercle vert plein avec un rayon de 20 pixels
         if self.nb_packages == 1:
@@ -107,6 +108,13 @@ class Robot:
         text = font.render(str(self.nb_packages), True, (255, 255, 255))  # Couleur blanche
         text_rect = text.get_rect(center=self.rect.center)
         screen.blit(text, text_rect)
+
+    def draw_map(self):
+        print("oui")
+        for i in range(10):
+            for j in range(10):
+                if self.map[i][j] == 1:
+                    pygame.draw.rect(screen, (0, 0, 0), pygame.Rect(j*100, i*100, 100, 100))
 
     def collision(self, obstacles):
         for obstacle in obstacles:
