@@ -78,13 +78,13 @@ def write_names(colis):
     zones = []
 
     name = 'Zone 1'
-    textName = font.render(name, True, 'white', 'black')
+    textName = font.render(name, True, 'white', 'red')
     textRect = textName.get_rect()
     textRect.center = (150,150)
     zones.append([textName,textRect])
 
     name = 'Zone 2'
-    textName = font.render(name, True, 'white', 'black')
+    textName = font.render(name, True, 'white', 'orange')
     textRect = textName.get_rect()
     textRect.center = (150,350)
     zones.append([textName,textRect])
@@ -460,9 +460,9 @@ def coords_commandes(robot, commandes):
 
 def update_map(robot, robots):
     robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -490,16 +490,14 @@ def update_map(robot, robots):
                 while pos != pos_start:
                     robot.map[pos_start[0], pos_start[1]] = 0
                     pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
-            if other_robot.destination[1] >= 5:
+            if other_robot.destination[1] >= 6:
                 line = other_robot.destination[0]
-                robot.map[line][5] = 1
                 robot.map[line][6] = 1
                 robot.map[line][7] = 1
                 robot.map[line][8] = 1
                 robot.map[line][9] = 1
-            if pos[1] >= 5 and pos[0] != 9:
+            if pos[1] >= 6 and pos[0] != 9:
                 line = pos[0]
-                robot.map[line][5] = 1
                 robot.map[line][6] = 1
                 robot.map[line][7] = 1
                 robot.map[line][8] = 1
