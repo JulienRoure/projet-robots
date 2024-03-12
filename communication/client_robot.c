@@ -124,11 +124,14 @@ int main(int argc, char *argv[]) {
     while(!stopBoucle) {
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
         lireFichier(fichierMessageFinTrajet, bufferFinTrajet);
-        if (bufferFinTrajet == "1"){
-        	strcpy(bufferEmission, "FIN CHEMIN");
-        	envoiDonnees(client_socket, bufferEmission);
+        if (bufferFinTrajet[0] == '1'){
+        	strcpy(bufferEmission, "1");
         	ecrireFichier("0",fichierMessageFinTrajet);
         }
+        else{
+        	strcpy(bufferEmission, "0");
+        }
+        envoiDonnees(client_socket, bufferEmission);
         //if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!"); // Pair
         //else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur); // Impair
         
