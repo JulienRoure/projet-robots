@@ -1,0 +1,12 @@
+- Intégration commande --> la raspberry doit lire dans le fichier dans lequel on écrit la commande de Tom
+	Dans client, il faut qu'on écrive le résultat dans un fichier
+	Voir avec José et Isabela
+
+- Voir comment récupérer la position du robot régulièrement (avec José et Isabela)
+	Odométrie --> José et Isabela
+	Marvelmind --> sur le Serveur
+Corriger le décalage de l'odométrie avec Marvelmind + ne pas considérer la valeur donnée par Marvelmind lorsqu'il y a un gros pic
+	Marvelmind sur le serveur + le robot
+
+
+
