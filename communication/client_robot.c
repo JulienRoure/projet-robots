@@ -13,6 +13,16 @@ void envoiDonnees(int socket, char *buffer) {
     if (strlen(buffer) != 0) send(socket, buffer, strlen(buffer), 0);
 }
 
+void ecrireFichier(char *message, char *nomFichier) {
+    FILE *fichier = fopen(nomFichier, "w");    //remplace le contenu du fichier
+    if (fichier == NULL) {
+        perror("Erreur lors de l'ouverture du fichier");
+        exit(1);
+    }
+    fprintf(fichier, "%s\n", message);
+    fclose(fichier);
+}
+
 void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
     ssize_t received_bytes = recv(socket, buffer, MAX_BUFFER_SIZE - 1, 0);
     if (received_bytes == -1) {
@@ -26,6 +36,35 @@ void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
     }
 }
 
+void lireFichier(char* nom_fichier, char *buffer) {
+    FILE* fichier;
+    // char* buffer = NULL;
+    long taille_fichier;
+    
+    fichier = fopen(nom_fichier, "r");
+    if (fichier == NULL) {
+        printf("Le fichier spécifié n'existe pas.\n");
+        return;
+    }
+    
+    fseek(fichier, 0, SEEK_END);
+    taille_fichier = ftell(fichier);
+    rewind(fichier);
+    
+    // buffer = (char*)malloc(taille_fichier * sizeof(char));
+    if (buffer == NULL) {
+        printf("lireFichier : Erreur d'allocation de mémoire.\n");
+        fclose(fichier);
+        return;
+    }
+    
+    fread(buffer, sizeof(char), taille_fichier, fichier);
+    fclose(fichier);
+    buffer[taille_fichier] = '\0';
+    
+    return;
+}
+
 int main(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <adresse IP du serveur> <port>\n", argv[0]);
@@ -36,7 +75,9 @@ int main(int argc, char *argv[]) {
     char bufferReception[MAX_BUFFER_SIZE];
     char bufferEmission[MAX_BUFFER_SIZE];
 
-
+	char * fichierMessageFinTrajet = "arrivee.txt";
+	char bufferFinTrajet[MAX_BUFFER_SIZE];
+	
     const char *server_ip = argv[1];
     const int server_port = atoi(argv[2]);
 
@@ -82,12 +123,18 @@ int main(int argc, char *argv[]) {
     int compteur = 0;
     while(!stopBoucle) {
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
-        if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!"); // Pair
-        else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur); // Impair
+        lireFichier(fichierMessageFinTrajet, bufferFinTrajet);
+        if (bufferFinTrajet == "1"){
+        	strcpy(bufferEmission, "FIN CHEMIN");
+        	envoiDonnees(client_socket, bufferEmission);
+        	ecrireFichier("0",fichierMessageFinTrajet);
+        }
+        //if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!"); // Pair
+        //else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur); // Impair
         
-        if (compteur == 4) bufferEmission[0] = '\0'; // Tester l'envoi d'une chaîne vide
-        envoiDonnees(client_socket, bufferEmission);
-        compteur++;
+        //if (compteur == 4) bufferEmission[0] = '\0'; // Tester l'envoi d'une chaîne vide
+        //envoiDonnees(client_socket, bufferEmission);
+        //compteur++;
     }
 
     // Fermeture de la socket
