@@ -1,12 +1,3 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <fcntl.h>
-#include <unistd.h>
-#include <signal.h>
-#include <semaphore.h>
-#include <time.h>
-#include "marvelmind.h"
 #include "tracker.h"
 
 #define CHECK(sts, value, msg)             \
