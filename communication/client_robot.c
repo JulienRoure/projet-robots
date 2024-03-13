@@ -13,7 +13,7 @@ void envoiDonnees(int socket, char *buffer) {
     if (strlen(buffer) != 0) send(socket, buffer, strlen(buffer), 0);
 }
 
-void ecrireFichier(char *message, char *nomFichier) {
+void ecrireFichier(char *nomFichier, char *message) {
     FILE *fichier = fopen(nomFichier, "w");    //remplace le contenu du fichier
     if (fichier == NULL) {
         perror("Erreur lors de l'ouverture du fichier");
@@ -32,7 +32,7 @@ void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
         *stopBoucle = 1;
     } else {
         buffer[received_bytes] = '\0';
-        printf("Message du serveur : %s\n", buffer);
+        //printf("Message du serveur : %s\n", buffer);
     }
 }
 
@@ -75,8 +75,10 @@ int main(int argc, char *argv[]) {
     char bufferReception[MAX_BUFFER_SIZE];
     char bufferEmission[MAX_BUFFER_SIZE];
 
-	char * fichierMessageFinTrajet = "arrivee.txt";
+	char * fichierMessageFinTrajet = "arrivee.txt"; //fichier indiquant quand un robot est arrivé à destination
 	char bufferFinTrajet[MAX_BUFFER_SIZE];
+	
+	char * fichierCommande = "commande.txt"; //fichier contenant les commandes pour un robot
 	
     const char *server_ip = argv[1];
     const int server_port = atoi(argv[2]);
@@ -120,26 +122,37 @@ int main(int argc, char *argv[]) {
 
     printf("Connecté au serveur %s:%d\n", server_ip, server_port);
 
-    int compteur = 0;
+	ecrireFichier(fichierMessageFinTrajet, "0"); // On initialise "arrivee.txt"
+	
+	/* -------------------------------------------- */
+	/* ----- BOUCLE D'ACTION LECTURE/ECRITURE ----- */
+	/* -------------------------------------------- */
+	
     while(!stopBoucle) {
+    
+    	//Recevoir les commandes
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
+        ecrireFichier(fichierCommande, bufferReception);
+        printf("Réception de la commande : %s\n", bufferReception);
+        
+        //Envoyer l'état du robot
         lireFichier(fichierMessageFinTrajet, bufferFinTrajet);
         if (bufferFinTrajet[0] == '1'){
-        	strcpy(bufferEmission, "1");
-        	ecrireFichier("0",fichierMessageFinTrajet);
+        	strcpy(bufferEmission, bufferFinTrajet);
+        	ecrireFichier(fichierMessageFinTrajet, "0");
         }
         else{
-        	strcpy(bufferEmission, "0");
+        	strcpy(bufferEmission, bufferFinTrajet);
         }
         envoiDonnees(client_socket, bufferEmission);
-        //if ((compteur % 2) == 0) strcpy(bufferEmission, "Bonjour, serveur!"); // Pair
-        //else sprintf(bufferEmission, "Bonjour, serveur! Ceci est la %d-ième communication.", compteur); // Impair
-        
-        //if (compteur == 4) bufferEmission[0] = '\0'; // Tester l'envoi d'une chaîne vide
-        //envoiDonnees(client_socket, bufferEmission);
-        //compteur++;
+        printf("Envoi de l'information : %s\n", bufferEmission);
     }
-
+	
+	/* -------------------------------------------- */
+	/* -------------------------------------------- */
+	/* -------------------------------------------- */
+	
+	
     // Fermeture de la socket
     close(client_socket);
 

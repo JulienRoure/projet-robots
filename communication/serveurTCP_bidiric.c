@@ -21,22 +21,25 @@
 
 #define CHECKERROR_SOCK(var,val,msg, socket)     if (var==val) {perror(msg); close(socket); exit(EXIT_FAILURE);}
 
-void ecrireFichier(char *message, char *nom_fichier) {
-    FILE *fichier = fopen(nom_fichier, "a");
+void ecrireFichier(char *nomFichier, char *message) {
+    FILE *fichier = fopen(nomFichier, "w");
     if (fichier == NULL) {
-        perror("Erreur lors de l'ouverture du fichier");
+        perror("Erreur lors de l'ouverture du fichier.\n");
         exit(1);
     }
-    fprintf(fichier, "%s\n", message);
+    int ret = fprintf(fichier, "%s\n", message);
+    if (ret < 0) {
+        perror(("Erreur lors de l'écriture dans le fichier %s\n", nomFichier));
+        exit(EXIT_FAILURE);
+    }
     fclose(fichier);
 }
 
-void lireFichier(char* nom_fichier, char *buffer) {
+void lireFichier(char* nomFichier, char *buffer) {
     FILE* fichier;
-    // char* buffer = NULL;
     long taille_fichier;
     
-    fichier = fopen(nom_fichier, "r");
+    fichier = fopen(nomFichier, "r");
     if (fichier == NULL) {
         printf("Le fichier spécifié n'existe pas.\n");
         return;
@@ -69,8 +72,8 @@ void recevoirDonnees(int socket, char *bufferEmission, int *stopBoucle) {
         *stopBoucle = 1;
     } else {
         bufferEmission[received_bytes] = '\0';
-        printf("Message reçu sur la socket n°%d ; ", socket);
-        printf("Message du client : %s\n", bufferEmission);
+        //printf("Message reçu sur la socket n°%d ; ", socket);
+        //printf("Message du client : %s\n", bufferEmission);
     }
 }
 
@@ -84,12 +87,17 @@ void attendre_XXns(int nsAttente) {
     }
 }
 
+void attendre_secondes(int secondesAttente) {
+	sleep(secondesAttente);
+}
+
 int main() {
     int socketEcoute, socketDialogue[NB_MAX_CONNECTIONS];
     struct sockaddr_in serverAddr, clientAddr[NB_MAX_CONNECTIONS];
     socklen_t addrSize = sizeof(struct sockaddr_in);
 	
-	char fichierCommande[MAX_BUFFER_SIZE][NB_MAX_CONNECTIONS];
+	char fichierCommande[MAX_BUFFER_SIZE][NB_MAX_CONNECTIONS]; //Tableau contenant les fichiers avec commandes A ENVOYER aux robots
+	char etatsRobots[MAX_BUFFER_SIZE][NB_MAX_CONNECTIONS]; //Tableau contenant les fichiers avec les états des robots RECUs des robots
 	
     char bufferEmission[MAX_BUFFER_SIZE];
     char bufferReception[MAX_BUFFER_SIZE];
@@ -129,11 +137,14 @@ int main() {
     for(int i = 0; i < NB_MAX_CONNECTIONS; i++) {
 		
 		sprintf(fichierCommande[i], "robot_target%d.txt", i);
-		// printf("fichierCommande[i] = %s\n", fichierCommande[i]);
+		sprintf(etatsRobots[i], "etat_robot%d.txt", i);
+		
+		ecrireFichier(etatsRobots[i], "0"); // On initialise la valeur contenue dans "etat_robot#.txt"
     	
         // Création des sockets
         socketDialogue[i] = accept(socketEcoute, (struct sockaddr*)&(clientAddr[i]), &addrSize);
-        CHECKERROR_SOCK(socketDialogue[i],-1, "Erreur lors de l'acceptation de la connexion\n", socketEcoute); // On coupe toutes les connections si une seule échoue! Comportement à modifier?
+        // On coupe toutes les connections si une seule échoue! Comportement à modifier?
+        CHECKERROR_SOCK(socketDialogue[i],-1, "Erreur lors de l'acceptation de la connexion\n", socketEcoute);
         printf("Connexion acceptée depuis %s:%d\n", inet_ntoa(clientAddr[i].sin_addr), ntohs(clientAddr[i].sin_port));
 
         // Création des processus fils
@@ -141,22 +152,42 @@ int main() {
 
         if (pidFils[i] == 0) {
             // On est dans le fils
-            printf("Je suis le processus fils %d, j'ai été créé en %d-ième.\n", getpid(), i + 1);
+            printf("Je suis le processus fils %d, j'ai été créé en %d-ième.\n", getpid(), i);
             printf("Je suis connecté au client ayant l'adresse IP:Port %s:%d\n", inet_ntoa(clientAddr[i].sin_addr), ntohs(clientAddr[i].sin_port));
 
             // Indiquer au client son identifiant
             sprintf(bufferEmission, "Tu es le robot %d", i);
             send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
             
-			while(1) {    
-		        //sprintf(bufferEmission, "Message n°%d adressé au client n°%d\n", j, i);
-		        //send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
+            
+            /* -------------------------------------------- */
+			/* ----- BOUCLE D'ACTION LECTURE/ECRITURE ----- */
+			/* -------------------------------------------- */
+            
+			while(1) {
+		        
+		        //Envoyer les commandes
 		        lireFichier(fichierCommande[i], bufferEmission);
-                printf("bufferEmission = %s\n", bufferEmission);
 		    	send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
+		    	printf("Envoi de la commande = %s au robot n°%d.\n", bufferEmission, i);
+		    	
+		    	//Reception de l'état du robot
 		        recevoirDonnees(socketDialogue[i], bufferReception, NULL);
-		        attendre_XXns(50000000); // Odg : attendre 50ms entre deux envois pour pouvoir les distinguer chez le client 
+		        if (bufferReception[0] == '1'){
+		        	ecrireFichier(etatsRobots[i], bufferReception);
+		        	printf("Reçu : %s. Le robot n°%d est arrivé !\n", bufferReception, i);
+		        }
+		        else{
+		        	printf("Reçu : %s. Le robot n°%d n'est pas encore arrivé.\n", bufferReception, i);
+		        }
+		        
+		        //attendre_XXns(50000000); // Odg : attendre 50ms entre deux envois pour pouvoir les distinguer chez le client
+		        attendre_secondes(5); //attendre 5 secondes
 	        }
+	        
+	        /* -------------------------------------------- */
+			/* -------------------------------------------- */
+			/* -------------------------------------------- */
 
             
             // sleep(10);
