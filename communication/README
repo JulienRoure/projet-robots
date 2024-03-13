@@ -25,6 +25,6 @@ Code principal qui tourne sur la Raspberry Pi de chaque robot. Voici les étapes
 4) Lance le code Python "commSerialToArduino.py", qui lit le contenu de "commande.txt" et l'envoie par le port série à l'Arduino
 5) Lance le code Python "commSerialFromArduino.py", qui lit l'état du robot envoyé par le port série depuis l'Arduino (0 ou 1), et qui l'écrit dans "arrivee.txt"
 5) Lit son état dans "arrivee.txt"
-6) Si son état = 1, il réécrit 0 dans "arrivee.txt" et envoie son état = 1 au serveur
+6) Envoie son état au serveur. Si l'état = 1, alors il remplace 1 par 0 dans "arrivee.txt"
 
 Les étapes 2 à 6 tournent en boucle
