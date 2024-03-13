@@ -158,6 +158,7 @@ int main() {
             // Indiquer au client son identifiant
             sprintf(bufferEmission, "Tu es le robot %d", i);
             send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
+            attendre_secondes(5);
             
             
             /* -------------------------------------------- */
@@ -165,6 +166,8 @@ int main() {
 			/* -------------------------------------------- */
             
 			while(1) {
+		        
+		        printf("----------------------\n");
 		        
 		        //Envoyer les commandes
 		        lireFichier(fichierCommande[i], bufferEmission);

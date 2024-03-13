@@ -9,8 +9,20 @@
 
 #define LOCAL_PORT 6000
 
+
+
+
+/* -------------------------------- */
+/* ----- FONCTIONS D'ECRITURE ----- */
+/* -------------------------------- */
+
 void envoiDonnees(int socket, char *buffer) {
     if (strlen(buffer) != 0) send(socket, buffer, strlen(buffer), 0);
+}
+
+void ecrireUART(char *nomProgramme){
+	printf("Exécution du script Python d'envoi de données à l'Arduino\n");
+    system("python3 commSerialToArduino.py");
 }
 
 void ecrireFichier(char *nomFichier, char *message) {
@@ -23,6 +35,11 @@ void ecrireFichier(char *nomFichier, char *message) {
     fclose(fichier);
 }
 
+
+/* -------------------------------- */
+/* ----- FONCTIONS DE LECTURE ----- */
+/* -------------------------------- */
+
 void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
     ssize_t received_bytes = recv(socket, buffer, MAX_BUFFER_SIZE - 1, 0);
     if (received_bytes == -1) {
@@ -34,6 +51,11 @@ void recevoirDonnees(int socket, char *buffer, int *stopBoucle) {
         buffer[received_bytes] = '\0';
         //printf("Message du serveur : %s\n", buffer);
     }
+}
+
+void lireUART(char *nomProgramme){
+	printf("Exécution du script Python d'envoi de données à l'Arduino\n");
+    system("python3 commSerialToArduino.py");
 }
 
 void lireFichier(char* nom_fichier, char *buffer) {
@@ -79,6 +101,9 @@ int main(int argc, char *argv[]) {
 	char bufferFinTrajet[MAX_BUFFER_SIZE];
 	
 	char * fichierCommande = "commande.txt"; //fichier contenant les commandes pour un robot
+	
+	char *programmeEnvoiUART = "commSerialToArduino.py";
+	char *programmeReceptionUART = "commSerialFromArduino.py";
 	
     const char *server_ip = argv[1];
     const int server_port = atoi(argv[2]);
@@ -128,14 +153,21 @@ int main(int argc, char *argv[]) {
 	/* ----- BOUCLE D'ACTION LECTURE/ECRITURE ----- */
 	/* -------------------------------------------- */
 	
+	recevoirDonnees(client_socket, bufferReception, &stopBoucle); //Assignation du numéro du robot
+	printf("Message du serveur : %s\n", bufferReception);
+	
     while(!stopBoucle) {
-    
+    	
+    	printf("----------------------\n");
+    	
     	//Recevoir les commandes
         recevoirDonnees(client_socket, bufferReception, &stopBoucle);
         ecrireFichier(fichierCommande, bufferReception);
         printf("Réception de la commande : %s\n", bufferReception);
+        ecrireUART(programmeEnvoiUART);
         
         //Envoyer l'état du robot
+        lireUART(programmeReceptionUART);
         lireFichier(fichierMessageFinTrajet, bufferFinTrajet);
         if (bufferFinTrajet[0] == '1'){
         	strcpy(bufferEmission, bufferFinTrajet);
