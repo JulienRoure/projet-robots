@@ -3,6 +3,14 @@
 #include <unistd.h>
 #include <sys/wait.h>
 
+#define BUFFER_SIZE 512
+
+#define CHECK(sts, value, msg)             \
+    if ((value) == (sts)) {              \
+        perror(msg);                \
+        exit(EXIT_FAILURE);         \
+    }
+
 int main() {
     // Créer un tube pour la communication entre les deux processus
     int pipefd[2];
@@ -59,6 +67,25 @@ int main() {
         } else {
             // Code du processus parent
             close(pipefd[0]);  // Fermer les deux côtés du tube dans le parent
+
+            // Lecture en ligne par ligne de la sortie de marvelmind_c
+            char buffer[BUFFER_SIZE];
+            ssize_t bytesRead;
+
+            while ((bytesRead = read(pipefd[1], buffer, BUFFER_SIZE)) > 0) {
+                // Écrire chaque ligne dans le tube
+                ssize_t totalWritten = 0;
+                while (totalWritten < bytesRead) {
+                    ssize_t bytesWritten = write(pipefd[1], buffer + totalWritten, bytesRead - totalWritten);
+                    if (bytesWritten < 0) {
+                        perror("Erreur lors de l'écriture dans le tube");
+                        exit(EXIT_FAILURE);
+                    }
+                    totalWritten += bytesWritten;
+                }
+            }
+
+            // Fermer le côté écriture du tube
             close(pipefd[1]);
 
             // Attendre la fin des deux processus enfants

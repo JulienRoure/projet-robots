@@ -25,3 +25,8 @@ int parserFunction() {
 
     return 0;
 }
+
+int main(void) {
+    parserFunction();
+    return 0;
+}
