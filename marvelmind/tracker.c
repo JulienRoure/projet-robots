@@ -1,166 +1,81 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
-#if defined(WIN32) || defined(_WIN64)
-#include <windows.h>
-#else
 #include <fcntl.h>
 #include <unistd.h>
 #include <signal.h>
 #include <semaphore.h>
 #include <time.h>
-#endif
 #include "marvelmind.h"
 #include "tracker.h"
 
+#define CHECK(sts, value, msg)             \
+    if ((value) == (sts)) { perror(msg); exit(EXIT_FAILURE); }
+
 bool terminateProgram=false;
 
-#if defined(WIN32) || defined(_WIN64)
-BOOL CtrlHandler( DWORD fdwCtrlType )
-{
-    if ((fdwCtrlType==CTRL_C_EVENT ||
-            fdwCtrlType==CTRL_BREAK_EVENT ||
-            fdwCtrlType==CTRL_CLOSE_EVENT ||
-            fdwCtrlType==CTRL_LOGOFF_EVENT ||
-            fdwCtrlType==CTRL_SHUTDOWN_EVENT) &&
-            (terminateProgram==false))
-    {
-        terminateProgram=true;
-        return true;
-    }
-    else return false;
-}
-#else
-void CtrlHandler(int signum)
-{
+void CtrlHandler(int signum) {
     terminateProgram=true;
 }
-#endif
 
-#if defined(WIN32) || defined(_WIN64)
-void sleep(unsigned int seconds)
-{
-    Sleep (seconds*1000);
-}
-#endif
-
-
-#if defined(WIN32) || defined(_WIN64)
-HANDLE ghSemaphore;
-DWORD dwSemWaitResult;
-void semCallback()
-{
-    ReleaseSemaphore(
-        ghSemaphore,  // handle to semaphore
-        1,            // increase count by one
-        NULL);
-}
-#else
-// Linux
 static sem_t *sem;
 struct timespec ts;
-void semCallback()
-{
+void semCallback() {
 	sem_post(sem);
 }
-#endif // WIN32
 
-#ifdef _WIN64
-const wchar_t* GetWC(const char* c)
-{
-    const size_t cSize = strlen(c) + 1;
-    wchar_t* wc =  malloc(sizeof(wchar_t)*cSize);
-    mbstowcs(wc, c, cSize);
+void ecrire_position(float x, float y, float addr) {
+    char nom_fichier[16];
 
-    return wc;
+    // if (addr == XX) addr = xx; // on écrit les coordonnées du beacon XX à la ligne xx 
+    // if (addr == YY) addr = yy; // on écrit les coordonnées du beacon YY à la ligne yy
+    if (addr == 15) addr = 0; // on écrit les coordonnées du beacon 15 à la ligne 0 
+    else return;
+
+    sprintf(nom_fichier, "position_robot%d", (int)addr);
+    FILE *fichier = fopen(nom_fichier, "w"); // ouvrir en "r+"?
+    CHECK(fichier, NULL, "Erreur lors de l'ouverture du fichier");
+    fprintf(fichier, "%.3f %.3f", x, y);
+    fclose(fichier);
 }
-#endif
 
-int trackerFunction ()
-{
-    // get port name from command line arguments (if specified)
-    #ifdef _WIN64
-    const wchar_t * ttyFileName;
-    if (argc == 2) ttyFileName = GetWC(argv[1]);
-    else ttyFileName = TEXT(DEFAULT_TTY_FILENAME);
-    #else
+int main () {
     const char * ttyFileName;
-    /* if (argc == 2) ttyFileName = argv[1];
-    else  */
     ttyFileName = DEFAULT_TTY_FILENAME;
-    #endif
 
     // Init
     struct MarvelmindHedge * hedge=createMarvelmindHedge ();
-    if (hedge==NULL)
-    {
-        puts ("Error: Unable to create MarvelmindHedge");
-        return -1;
-    }
+    CHECK(hedge, NULL, "Error: Unable to create MarvelmindHedge");
     hedge->ttyFileName=ttyFileName;
-    hedge->verbose=true; // show errors and warnings
+    hedge->verbose=false; // ne pas display "Opened serial port ..."
     hedge->anyInputPacketCallback= semCallback;
     startMarvelmindHedge (hedge);
 
     // Set Ctrl-C handler
-#if defined(WIN32) || defined(_WIN64)
-    SetConsoleCtrlHandler( (PHANDLER_ROUTINE) CtrlHandler, TRUE );
-#else
     signal (SIGINT, CtrlHandler);
     signal (SIGQUIT, CtrlHandler);
-#endif
 
-#if defined(WIN32) || defined(_WIN64)
-    ghSemaphore = CreateSemaphore(
-        NULL, // default security attributes
-        10,  // initial count
-        10,  // maximum count
-        NULL);          // unnamed semaphore
-    if (ghSemaphore == NULL)
-    {
-        printf("CreateSemaphore error: %d\n", (int) GetLastError());
-        return 1;
-    }
-#else
-	// Linux
 	sem = sem_open(DATA_INPUT_SEMAPHORE, O_CREAT, 0777, 0);
-#endif
 
     // Main loop
-    while ((!terminateProgram) && (!hedge->terminationRequired))
-    {
-        //sleep (3);
-        #if defined(WIN32) || defined(_WIN64)
-        dwSemWaitResult = WaitForSingleObject(
-            ghSemaphore,   // handle to semaphore
-            1000); // time-out interval
-        #else
-        // Linux
-        if (clock_gettime(CLOCK_REALTIME, &ts) == -1)
-		{
-			printf("clock_gettime error");
-			return -1;
-		}
+    while ((!terminateProgram) && (!hedge->terminationRequired)) {
+
+        // Set timer
+        CHECK(clock_gettime(CLOCK_REALTIME, &ts), -1, "clock_gettime error");
 		ts.tv_sec += 2;
 		sem_timedwait(sem,&ts);
-        #endif
 
+        // Récupérer positions et écrire dans fichier positions
+        float *x = (float*)malloc(sizeof(float));
+        float *y = (float*)malloc(sizeof(float));
+        float *addr = (float*)malloc(sizeof(float));
 
-        printPositionFromMarvelmindHedge (hedge, true);
+        getPositionFromMarvelmind(hedge, true, x, y, addr);
+        ecrire_position(*x, *y, *addr);
 
-        printStationaryBeaconsPositionsFromMarvelmindHedge (hedge, true);
-
-        printRawDistancesFromMarvelmindHedge(hedge, true);
-
-        printRawIMUFromMarvelmindHedge(hedge, true);
-
-        printFusionIMUFromMarvelmindHedge(hedge, true);
-
-        printTelemetryFromMarvelmindHedge(hedge, true);
-
-        printQualityFromMarvelmindHedge(hedge, true);
-
-        printUserPayloadFromMarvelmindHedge(hedge, true);
+        free(x);
+        free(y);    
+        free(addr);
     }
 
     // Exit

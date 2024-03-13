@@ -39,6 +39,6 @@ void semCallback();
 const wchar_t* GetWC(const char* c);
 #endif
 
-int trackerFunction(void);
+int main(void);
 
 #endif /* TRACKER_H */

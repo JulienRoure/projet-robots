@@ -227,6 +227,9 @@ struct MarvelmindHedge * createMarvelmindHedge ();
 void destroyMarvelmindHedge (struct MarvelmindHedge * hedge);
 void startMarvelmindHedge (struct MarvelmindHedge * hedge);
 
+void getPositionFromMarvelmind(struct MarvelmindHedge * hedge,
+    bool onlyNew, float *x, float *y, float *addr); // fonction perso
+
 void printPositionFromMarvelmindHedge (struct MarvelmindHedge * hedge,
                                        bool onlyNew);
 bool getPositionFromMarvelmindHedge (struct MarvelmindHedge * hedge,

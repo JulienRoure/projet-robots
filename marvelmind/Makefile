@@ -20,9 +20,9 @@ main: $(OBJ)
 
 
 
-marvelmind_c:
-	gcc -g -pthread -c marvelmind.c -o marvelmind.o
-	gcc -g -pthread -c tracker.c -o tracker.o
+marvelmind_c: marvelmind.c tracker.c
+	gcc -pthread -c marvelmind.c -o marvelmind.o
+	gcc -pthread -c tracker.c -o tracker.o
 	gcc -o marvelmind_c tracker.o marvelmind.o -pthread
 
 main_proc: main_proc.o
@@ -42,4 +42,4 @@ parser.o: parser.c
 
 # Clean up object files and executable
 clean:
-	rm -f $(OBJ) *.o main
+	rm -f $(OBJ) *.o main parser main_proc marvelmind_c

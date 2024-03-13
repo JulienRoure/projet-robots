@@ -1111,6 +1111,65 @@ static void printRealtimeStamp(struct MarvelmindHedge * hedge, char *s, Timestam
     }
 }
 
+
+void getPositionFromMarvelmind(struct MarvelmindHedge * hedge,
+    bool onlyNew, float *x, float *y, float *addr) {
+    uint8_t i,j;
+    double xm,ym,zm;
+
+    if (hedge->haveNewValues_ || (!onlyNew))
+    {
+        struct PositionValue position;
+        uint8_t addresses[MAX_BUFFERED_POSITIONS];
+        uint8_t addressesNum= 0;
+
+        for(i=0;i<MAX_BUFFERED_POSITIONS;i++)
+        {
+           uint8_t address= hedge->positionBuffer[i].address;
+           bool alreadyProcessed= false;
+           if (addressesNum != 0)
+                for(j=0;j<addressesNum;j++)
+                {
+                    if (address == addresses[j])
+                    {
+                        alreadyProcessed= true;
+                        break;
+                    }
+               }
+            if (alreadyProcessed)
+                continue;
+            addresses[addressesNum++]= address;
+
+            getPositionFromMarvelmindHedgeByAddress (hedge, &position, address);
+            xm= ((double) position.x)/1000.0;
+            ym= ((double) position.y)/1000.0;
+            zm= ((double) position.z)/1000.0;
+            if (position.ready)
+            {
+                char times[128];
+                printRealtimeStamp(hedge, times, position.timestamp, position.realTime);
+
+                /* if (position.highResolution)
+                {
+                    printf ("Robot ID: %d, X: %.3f, Y: %.3f, T: %s\n",
+                            position.address, xm, ym, times);
+                } else
+                {
+                    printf ("Robot ID: %d, X: %.2f, Y: %.2f, T: %s\n",
+                            position.address, xm, ym, times);
+                } */
+                *x = xm;
+                *y = ym;
+                *addr = position.address;
+            }
+            hedge->haveNewValues_=false;
+        }
+    }
+
+
+}
+
+
 //////////////////////////////////////////////////////////////////////////////
 // Print average position coordinates
 // onlyNew: print only new positions
@@ -1152,7 +1211,7 @@ void printPositionFromMarvelmindHedge (struct MarvelmindHedge * hedge,
                 char times[128];
                 printRealtimeStamp(hedge, times, position.timestamp, position.realTime);
 
-                if (position.highResolution)
+                /* if (position.highResolution)
                 {
                     printf ("Address: %d, X: %.3f, Y: %.3f, Z: %.3f, Angle: %.1f, Flags: %d  at time T: %s\n",
                             position.address, xm, ym, zm, position.angle, position.flags, times);
@@ -1160,6 +1219,15 @@ void printPositionFromMarvelmindHedge (struct MarvelmindHedge * hedge,
                 {
                     printf ("Address: %d, X: %.2f, Y: %.2f, Z: %.2f, Angle: %.1f, Flags: %d at time T: %s\n",
                             position.address, xm, ym, zm, position.angle, position.flags, times);
+                } */
+                if (position.highResolution)
+                {
+                    printf ("Robot ID: %d, X: %.3f, Y: %.3f, T: %s\n",
+                            position.address, xm, ym, times);
+                } else
+                {
+                    printf ("Robot ID: %d, X: %.2f, Y: %.2f, T: %s\n",
+                            position.address, xm, ym, times);
                 }
             }
             hedge->haveNewValues_=false;
