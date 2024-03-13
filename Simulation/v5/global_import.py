@@ -1,9 +1,3 @@
-import pygame
-import math
-import numpy as np
-from time import sleep
-from random import random
-
 def colis_to_list(colis):
     return (int(colis[7])-1, int(colis[9])-1)
 
@@ -20,16 +14,3 @@ zones = {"Zone 1": (1, 2), "Zone 2": (3, 2), "Colis S1.1": [(0, 6), (2, 6)], "Co
 
 commandes = [("Colis S1.1", "Zone 1"), ("Colis S3.2", "Zone 2"), ("Colis S2.2", "Zone 2"), ("Colis S2.3", "Zone 1"), ("Colis S4.4", "Zone 2"), ("Colis S1.3", "Zone 1"), ("Colis S3.4", "Zone 2"), ("Colis S4.3", "Zone 1"), ("Colis S1.4", "Zone 1"), ("Colis S3.3", "Zone 2"), ("Colis S2.4", "Zone 1"), ("Colis S4.2", "Zone 2"), ("Colis S1.2", "Zone 1"), ("Colis S3.1", "Zone 2"), ("Colis S2.1", "Zone 1"), ("Colis S4.1", "Zone 2")]
 colis = count_colis(commandes)
-
-screen_width, screen_height = 1000, 1000
-screen = pygame.display.set_mode((screen_width, screen_height))
-
-walls = [pygame.Rect(600, 100 , 400, 100),
-         pygame.Rect(600, 300 , 400, 100),
-         pygame.Rect(600, 500 , 400, 100),
-         pygame.Rect(600, 700 , 400, 100),]
-stock_1 = [pygame.Rect(200, 100, 100, 100)]
-stock_1_o = [pygame.Rect(100, 100, 100, 100)]
-stock_2 = [pygame.Rect(200, 300, 100, 100)]
-stock_2_o = [pygame.Rect(100, 300, 100, 100)]
-waiting_zone = [pygame.Rect(100, 500, 100, 300)]

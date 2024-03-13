@@ -3,6 +3,7 @@ from fonctions import makeMap, draw_grid, update_map, coords_commandes, suite_co
 from global_import import walls, stock_1, stock_2, waiting_zone, screen, speed, commandes, colis, stock_1_o, stock_2_o
 import pygame
 from time import sleep
+from math import pi
 
 pygame.init()
 
@@ -69,6 +70,17 @@ def main():
             if not robot.blocked:
                 chemin(robot, robot.state)
 
+            if not robot.blocked and robot.targets_line != []:
+                with open("./fichiers_ecriture/robot_target"+str(robot.id)+".txt", "r+") as f:
+                    lines = f.readlines()
+                    if lines != []:
+                        if lines[0] != "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")":
+                            lines[0] = "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")"
+                            f.seek(0)
+                            f.writelines(lines)
+                    else:
+                        f.write("("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")")
+                        
             if not robot.moving:
                 if robot.current_speed_left > 0.01:
                     robot.current_speed_left -= 0.01

@@ -51,6 +51,7 @@ class Robot:
         self.can_move = True
         self.blocked = False
         self.dijkstra = True
+        self.targets_line = []
 
     def update(self, action):
         # Méthode pour mettre à jour la vitesse en fonction de l'action

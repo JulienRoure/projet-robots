@@ -1,6 +1,6 @@
 from classe_robot import Robot
 from fonctions import makeMap, draw_grid, update_map, coords_commandes, suite_coords, chemin, write_names
-from global_import import walls, stock_1, stock_2, waiting_zone, screen, speed, commandes, colis, stock_1_o, stock_2_o
+from global_import import walls, stock_1, stock_2, waiting_zone, screen, speed, commandes, colis
 import pygame
 from time import sleep
 
@@ -28,10 +28,8 @@ def main():
         screen.fill((255, 255, 255))  # Efface l'écran en le remplissant de blanc
         
         makeMap(walls, "black")
-        makeMap(stock_1, "red") 
-        makeMap(stock_1_o, "black") 
+        makeMap(stock_1, "red")  
         makeMap(stock_2,"orange")
-        makeMap(stock_2_o, "black")
         makeMap(waiting_zone,"blue")
         
         allTexts = write_names(colis)
@@ -68,6 +66,16 @@ def main():
 
             if not robot.blocked:
                 chemin(robot, robot.state)
+
+            with open("./fichiers_ecriture/robot_target"+str(robot.id)+".txt", "r+") as f:
+                lines = f.readlines()
+                if lines != []:
+                    if lines[0] != str(robot.destination):
+                        lines[0] = str(robot.destination)
+                        f.seek(0)
+                        f.writelines(lines)
+                else:
+                    f.write(str(robot.destination))
 
             if not robot.moving:
                 if robot.current_speed_left > 0.01:

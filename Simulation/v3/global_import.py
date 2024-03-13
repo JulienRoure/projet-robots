@@ -28,8 +28,6 @@ walls = [pygame.Rect(600, 100 , 400, 100),
          pygame.Rect(600, 300 , 400, 100),
          pygame.Rect(600, 500 , 400, 100),
          pygame.Rect(600, 700 , 400, 100),]
-stock_1 = [pygame.Rect(200, 100, 100, 100)]
-stock_1_o = [pygame.Rect(100, 100, 100, 100)]
-stock_2 = [pygame.Rect(200, 300, 100, 100)]
-stock_2_o = [pygame.Rect(100, 300, 100, 100)]
+stock_1 = [pygame.Rect(100, 100, 200, 100)]
+stock_2 = [pygame.Rect(100, 300, 200, 100)]
 waiting_zone = [pygame.Rect(100, 500, 100, 300)]

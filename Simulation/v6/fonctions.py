@@ -317,6 +317,8 @@ def impossible_move(robot, start, end):
 
 def dijkstra(robot, reach):
     n = 10
+    virtual = False
+    map_real = robot.map
     G = np.array([[99 for i in range(n)] for j in range(n)])
     for i in range(n):
         for j in range(n):
@@ -324,7 +326,17 @@ def dijkstra(robot, reach):
                 G[i][j] = 100
     if G[reach[0], reach[1]] == 100:
         robot.can_move = False
-        return G
+        robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        virtual = True
     G[reach[0], reach[1]] = 0
     here = reach
     visit = [reach]
@@ -339,10 +351,41 @@ def dijkstra(robot, reach):
                     G[points[0], points[1]] = min([G[point[0], point[1]] + 100*(not impossible_move(robot, points, point)) for point in around(points[0], points[1])]) + 1
             else:
                 deja_vu.append(here)
-    return G
+    robot.map = map_real
+    return G, virtual
+
+def path_to_targets(robot):
+    robot.targets_line = []
+    pos = position_to_case(robot)
+    count = 0
+    current = 0
+    if robot.path != []:
+        current = robot.path[0]
+    for i in range(len(robot.path)+1):
+        if i < len(robot.path) and current == robot.path[i]:
+            count += 1
+            direction = ind_map(current)
+            pos = (pos[0] + direction[0], pos[1] + direction[1])
+        else:
+            if robot.path != []:
+                robot.targets_line.append(pos)
+            if i < len(robot.path):
+                current = robot.path[i]
+            count = 1
+
+def path_tronqué(robot):
+    d = 0
+    pos = position_to_case(robot)
+    for i in range(len(robot.path)):
+        direction = ind_map(robot.path[i])
+        pos = (pos[0] + direction[0], pos[1] + direction[1])
+        if robot.map[pos[0]][pos[1]] == 1:
+            d = i
+            break
+    robot.path = robot.path[:d]
 
 def dijkstra_path(robot, reach, start = None):
-    G = dijkstra(robot, reach)
+    G, virtual = dijkstra(robot, reach)
     if start == None:
         start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
@@ -378,6 +421,12 @@ def dijkstra_path(robot, reach, start = None):
             test = True
     robot.can_move = True
     robot.blocked = False
+    if virtual:
+        path_tronqué(robot)
+    if virtual and robot.path == []:
+        robot.blocked = True
+        return 100
+    path_to_targets(robot)
     return distance_start
 
 def suite_coords(robot):

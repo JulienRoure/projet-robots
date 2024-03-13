@@ -1,110 +1,7 @@
-from global_import import screen, screen_width, screen_height, speed, zones, colis
-import pygame
+from global_import import speed, zones, colis
 import math
 import numpy as np
 from time import sleep
-
-def write_names(colis):
-    font = pygame.font.Font('freesansbold.ttf', 24)
-    allee_1 = []
-    allee_2 = []
-    allee_3 = []
-    allee_4 = []
-
-    for i in range(1,5):
-        name = 'S1.' + str(i)
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,140)
-        allee_1.append([textName,textRect])
-    
-    for i in range(1,5):
-        name = str(colis[0][i-1])
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,175)
-        allee_1.append([textName,textRect])
-
-    for i in range(1,5):
-        name = 'S2.' + str(i)
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,340)
-        allee_2.append([textName,textRect])
-
-    for i in range(1,5):
-        name = str(colis[1][i-1])
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,375)
-        allee_2.append([textName,textRect])
-
-    for i in range(1,5):
-        name = 'S3.' + str(i)
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,540)
-        allee_3.append([textName,textRect])
-
-    for i in range(1,5):
-        name = str(colis[2][i-1])
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,575)
-        allee_2.append([textName,textRect])
-
-    for i in range(1,5):
-        name = 'S4.' + str(i)
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,740)
-        allee_4.append([textName,textRect])
-
-    for i in range(1,5):
-        name = str(colis[3][i-1])
-        textName = font.render(name, True, 'white', 'black')
-        textRect = textName.get_rect()
-        x = 550+100*i
-        textRect.center = (x,775)
-        allee_2.append([textName,textRect])
-
-    zones = []
-
-    name = 'Zone 1'
-    textName = font.render(name, True, 'white', 'black')
-    textRect = textName.get_rect()
-    textRect.center = (150,150)
-    zones.append([textName,textRect])
-
-    name = 'Zone 2'
-    textName = font.render(name, True, 'white', 'black')
-    textRect = textName.get_rect()
-    textRect.center = (150,350)
-    zones.append([textName,textRect])
-
-    return [allee_1, allee_2, allee_3, allee_4, zones]
-
-def draw_grid():
-    # Couleur de la grille
-    color = (0, 0, 0) # Noir
-    # Épaisseur des lignes
-    thickness = 1
-    # Dessin des lignes verticales et horizontales
-    for x in range(0, screen_width+1, 100):
-        pygame.draw.line(screen, color, (x, 0), (x, screen_height), thickness)
-    for y in range(0, screen_height+1, 100):
-        pygame.draw.line(screen, color, (0, y), (screen_width, y), thickness)
-
-def makeMap(coord, color):
-    for rect in coord:
-        pygame.draw.rect(screen, color, rect)
 
 def position_to_colis(robot):
     if robot.state == "colis 1":    
@@ -317,6 +214,8 @@ def impossible_move(robot, start, end):
 
 def dijkstra(robot, reach):
     n = 10
+    virtual = False
+    map_real = robot.map
     G = np.array([[99 for i in range(n)] for j in range(n)])
     for i in range(n):
         for j in range(n):
@@ -324,7 +223,17 @@ def dijkstra(robot, reach):
                 G[i][j] = 100
     if G[reach[0], reach[1]] == 100:
         robot.can_move = False
-        return G
+        robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        virtual = True
     G[reach[0], reach[1]] = 0
     here = reach
     visit = [reach]
@@ -339,10 +248,41 @@ def dijkstra(robot, reach):
                     G[points[0], points[1]] = min([G[point[0], point[1]] + 100*(not impossible_move(robot, points, point)) for point in around(points[0], points[1])]) + 1
             else:
                 deja_vu.append(here)
-    return G
+    robot.map = map_real
+    return G, virtual
+
+def path_to_targets(robot):
+    robot.targets_line = []
+    pos = position_to_case(robot)
+    count = 0
+    current = 0
+    if robot.path != []:
+        current = robot.path[0]
+    for i in range(len(robot.path)+1):
+        if i < len(robot.path) and current == robot.path[i]:
+            count += 1
+            direction = ind_map(current)
+            pos = (pos[0] + direction[0], pos[1] + direction[1])
+        else:
+            if robot.path != []:
+                robot.targets_line.append(pos)
+            if i < len(robot.path):
+                current = robot.path[i]
+            count = 1
+
+def path_tronqué(robot):
+    d = 0
+    pos = position_to_case(robot)
+    for i in range(len(robot.path)):
+        direction = ind_map(robot.path[i])
+        pos = (pos[0] + direction[0], pos[1] + direction[1])
+        if robot.map[pos[0]][pos[1]] == 1:
+            d = i
+            break
+    robot.path = robot.path[:d]
 
 def dijkstra_path(robot, reach, start = None):
-    G = dijkstra(robot, reach)
+    G, virtual = dijkstra(robot, reach)
     if start == None:
         start = position_to_case(robot)
     distance_start = G[start[0]][start[1]]
@@ -378,12 +318,20 @@ def dijkstra_path(robot, reach, start = None):
             test = True
     robot.can_move = True
     robot.blocked = False
+    if virtual:
+        path_tronqué(robot)
+    if virtual and robot.path == []:
+        robot.blocked = True
+        return 100
     return distance_start
 
 def suite_coords(robot):
-    if robot.path == [] and robot.end_chemin and not position_to_case(robot) == robot.targets[0]:
+    if robot.path == [] and robot.end_chemin:
+        print("------------------------------------")
         if robot.targets != []:
             robot.destination = robot.targets.pop(0)
+        if robot.targets != [] and robot.destination == robot.targets[0]:
+            robot.targets.pop(0)
         d = dijkstra_path(robot, robot.destination)
         if d != 100:
             robot.state = robot.current.pop(0)
