@@ -47,3 +47,4 @@ class Robot:
         self.blocked = False
         self.dijkstra = True
         self.targets_line = []
+        self.pos_map = (0, 0)

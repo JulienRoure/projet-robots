@@ -12,6 +12,7 @@ def main():
     robot3 = Robot("robot3.png", (150, 750), 0, 3)
     robots = [robot1, robot2, robot3]
     running = True
+    robot_end = 0
 
     while running:
         tick += 1
@@ -48,14 +49,19 @@ def main():
 
             #récupérer robot_end et la position
 
-            if tick % 50 == robot.id*10:
+            with open("./fichiers_lecture/etat_robot"+str(robot.id-1)+".txt", "r") as f:
+                lines = f.readlines()
+                if lines != []:
+                    robot_end = int(lines[0])
+
+            if robot_end:
                 robot.dijkstra = True
                 robot.end = True
                 robot.end_test = False
                 if robot.path != []:
-                    pos = robot.targets_line.pop(0)
-                robot.position = (pos[1]*100+50, pos[0]*100+50)
-                if pos == robot.destination:
+                    robot.pos_map = robot.targets_line.pop(0)
+                robot.position = (robot.pos_map[1]*100+50, robot.pos_map[0]*100+50)
+                if robot.pos_map == robot.destination:
                     robot.end_chemin = True
                     robot.path = []
                 robot.position_start = robot.position
@@ -67,7 +73,7 @@ def main():
             path_to_targets(robot)
                  
             if not robot.blocked and robot.targets_line != [] and robot.path != []:
-                with open("./fichiers_ecriture/robot_target"+str(robot.id)+".txt", "r+") as f:
+                with open("./fichiers_ecriture/robot_target"+str(robot.id-1)+".txt", "r+") as f:
                     lines = f.readlines()
                     if lines != []:
                         if lines[0] != "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")":
