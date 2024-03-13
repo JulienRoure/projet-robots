@@ -49,10 +49,14 @@ def main():
 
             #récupérer robot_end et la position
 
-            with open("./fichiers_lecture/etat_robot"+str(robot.id-1)+".txt", "r") as f:
+            with open("../Simulation/v5/fichiers_lecture/etat_robot"+str(robot.id-1)+".txt", "r+") as f:
                 lines = f.readlines()
                 if lines != []:
                     robot_end = int(lines[0])
+                if robot_end:
+                	lines[0] = '0'
+                	f.seek(0)
+                	f.writelines(lines)
 
             if robot_end:
                 robot.dijkstra = True
@@ -73,7 +77,7 @@ def main():
             path_to_targets(robot)
                  
             if not robot.blocked and robot.targets_line != [] and robot.path != []:
-                with open("./fichiers_ecriture/robot_target"+str(robot.id-1)+".txt", "r+") as f:
+                with open("../Simulation/v5/fichiers_ecriture/robot_target"+str(robot.id-1)+".txt", "r+") as f:
                     lines = f.readlines()
                     if lines != []:
                         if lines[0] != "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")":
