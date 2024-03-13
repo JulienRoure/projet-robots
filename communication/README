@@ -1,0 +1,30 @@
+EXPLICATION DES CODES DE COMMUNICATION
+
+***************************************
+- serveurTCP_bidiric.c :
+
+Code principal qui tourne sur l'ordinateur. Voici les étapes principales :
+
+1) Connexion effectuée avec chacun des robots
+2) Lit les commandes écrites dans "robot_target#.txt" (# = 0, 1 ou 2)
+3) Envoie les commandes avec une socket à la Raspberry Pi présente sur le robot.
+4) Attend de recevoir des données de la Raspberry Pi (--> l'état du robot, c'est-à-dire 0 ou 1. 0 = le robot n'est pas encore arrivé, 1 = le robot est arrivé)
+5) Ecrit l'état du robot dans "etat_robot#.txt" (# = 0, 1 ou 2)
+6) Attend XX secondes (ou plutôt millisecondes)
+
+Les étapes 2 à 6 tournent en boucle
+
+***************************************
+- client_robot.c :
+
+Code principal qui tourne sur la Raspberry Pi de chaque robot. Voici les étapes principales :
+
+1) Connexion effectuée avec le serveur
+2) Attend de recevoir des données du serveur, c'est-à-dire les commandes (sous la forme (x, y, theta))
+3) Ecrit la commande dans le fichier "commande.txt"
+4) Lance le code Python "commSerialToArduino.py", qui lit le contenu de "commande.txt" et l'envoie par le port série à l'Arduino
+5) Lance le code Python "commSerialFromArduino.py", qui lit l'état du robot envoyé par le port série depuis l'Arduino (0 ou 1), et qui l'écrit dans "arrivee.txt"
+5) Lit son état dans "arrivee.txt"
+6) Si son état = 1, il envoie son état au serveur avec une socket
+
+Les étapes 2 à 6 tournent en boucle
