@@ -10,3 +10,13 @@ Corriger le décalage de l'odométrie avec Marvelmind + ne pas considérer la va
 
 
 
+---------------------------------------------
+POUR JEUDI
+
+- Régler pb communication entre Arduino et Raspberry (José)
+- Envoyer 0 ou 1 selon l'état du robot (Arduino -> Raspberry) 0 = pas arrivé, 1 = arrivé ==> dans le code de l'Arduino (Isabela)
+- Intégrer Marvelmind : créer un nouveau processus dans main_serveur.c (Joseph et Julien)
+- Script python : récupérer positions réelles dans les fichiers "position_robot#" (# = 0, 1 ou 2) : données sous la forme "x y" ex : "3.14 5.9" (Tom)
+- Adapter simulation au terrain réel (Tom)
+- Attente serveur : plusieurs connexions avant de se lancer + gestion mutex (Julien et Joseph)
+- Connexion automatique à un hotspot (bonus) --> script serveur à modifier en conséquence
