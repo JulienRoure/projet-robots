@@ -15,7 +15,7 @@
 #define READER_PORT 5000 // Serveur = lecteur, client = écrivain
 #define WRITER_PORT 5001 // Serveur = écrivain, client = lecteur
 
-#define NB_MAX_CONNECTIONS 1
+#define NB_MAX_CONNECTIONS 3
 
 #define CHECKERROR(var,val,msg)     if (var==val) {perror(msg); exit(EXIT_FAILURE);}
 
@@ -137,8 +137,8 @@ int main() {
     // Création des processus et sockets client
     for(int i = 0; i < NB_MAX_CONNECTIONS; i++) {
 		
-		sprintf(fichierCommande[i], "robot_target%d.txt", i);
-		sprintf(etatsRobots[i], "etat_robot%d.txt", i);
+		sprintf(fichierCommande[i], "../Simulation/v5/fichiers_ecriture/robot_target%d.txt", i);
+		sprintf(etatsRobots[i], "../Simulation/v5/fichiers_lecture/etat_robot%d.txt", i);
 		
 		ecrireFichier(etatsRobots[i], "0"); // On initialise la valeur contenue dans "etat_robot#.txt"
     	
@@ -159,7 +159,7 @@ int main() {
             // Indiquer au client son identifiant
             sprintf(bufferEmission, "Tu es le robot %d", i);
             send(socketDialogue[i], bufferEmission, strlen(bufferEmission), 0);
-            attendre_secondes(5);
+            attendre_secondes(2);
             
             
             /* -------------------------------------------- */
