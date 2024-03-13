@@ -233,29 +233,29 @@
       </packagedElement>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_ycAC4MAeEe6qf8oKgrYcHg" name="Requirement Diagram">
-      <packagedElement xmi:type="uml:Class" xmi:id="_GYTZQMAfEe6qf8oKgrYcHg" name="Requirement1">
+      <packagedElement xmi:type="uml:Class" xmi:id="_GYTZQMAfEe6qf8oKgrYcHg" name="Le système doit livrer les commandes qui lui sont envoyées.">
         <nestedClassifier xmi:type="uml:Class" xmi:id="_TgrkwMAfEe6qf8oKgrYcHg" name="Requirement1">
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_y3MUoMAfEe6qf8oKgrYcHg" name="Requirement1">
-            <nestedClassifier xmi:type="uml:Class" xmi:id="_V0XMsMAhEe6qf8oKgrYcHg" name="Requirement1"/>
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_y3MUoMAfEe6qf8oKgrYcHg" name="Le système doit localiser les robots.">
+            <nestedClassifier xmi:type="uml:Class" xmi:id="_V0XMsMAhEe6qf8oKgrYcHg" name="Le système doit localiser avec une précision de 5 cm."/>
           </nestedClassifier>
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_-myIQMAfEe6qf8oKgrYcHg" name="Requirement2"/>
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_-myIQMAfEe6qf8oKgrYcHg" name="Le système doit récupérer les commandes."/>
           <nestedClassifier xmi:type="uml:Class" xmi:id="_avnbMMAgEe6qf8oKgrYcHg" name="Requirement3"/>
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_9ACXcMAgEe6qf8oKgrYcHg" name="Requirement4"/>
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_9ACXcMAgEe6qf8oKgrYcHg" name="Le système doit localiser les obstacles."/>
         </nestedClassifier>
-        <nestedClassifier xmi:type="uml:Class" xmi:id="_ykQfoMAhEe6qf8oKgrYcHg" name="Requirement2">
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_90wjgMAhEe6qf8oKgrYcHg" name="Requirement1"/>
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_Hly_wMAiEe6qf8oKgrYcHg" name="Requirement2"/>
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_WQkyIMAiEe6qf8oKgrYcHg" name="Requirement3">
-            <nestedClassifier xmi:type="uml:Class" xmi:id="_hYjMIMAiEe6qf8oKgrYcHg" name="Requirement1"/>
-            <nestedClassifier xmi:type="uml:Class" xmi:id="_G-0C0MAjEe6qf8oKgrYcHg" name="Requirement2"/>
+        <nestedClassifier xmi:type="uml:Class" xmi:id="_ykQfoMAhEe6qf8oKgrYcHg" name="Le système doit livrer les colis avec des robots autonomes.">
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_90wjgMAhEe6qf8oKgrYcHg" name="Les robots doivent se déplacer."/>
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_Hly_wMAiEe6qf8oKgrYcHg" name="Les robots doivent pouvoir s'arrêter d'urgence."/>
+          <nestedClassifier xmi:type="uml:Class" xmi:id="_WQkyIMAiEe6qf8oKgrYcHg" name="Le système doit faire respecter les règles de déplacement aux robots.">
+            <nestedClassifier xmi:type="uml:Class" xmi:id="_hYjMIMAiEe6qf8oKgrYcHg" name="Le système doit faire éviter les obstacles aux robots."/>
+            <nestedClassifier xmi:type="uml:Class" xmi:id="_ReAGcOBMEe6jGdBlVUQj_w" name="Le système doit vérifier la libre circulation dans une allée."/>
           </nestedClassifier>
-        </nestedClassifier>
-        <nestedClassifier xmi:type="uml:Class" xmi:id="_ZU30IMAjEe6qf8oKgrYcHg" name="Requirement3">
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_fHX-QMAjEe6qf8oKgrYcHg" name="Requirement1"/>
-          <nestedClassifier xmi:type="uml:Class" xmi:id="_nocAYMAjEe6qf8oKgrYcHg" name="Requirement2"/>
         </nestedClassifier>
       </packagedElement>
       <packagedElement xmi:type="uml:Abstraction" xmi:id="_fDz-0MAhEe6qf8oKgrYcHg" name="Refine2" client="_V0XMsMAhEe6qf8oKgrYcHg" supplier="_y3MUoMAfEe6qf8oKgrYcHg"/>
+      <packagedElement xmi:type="uml:Class" xmi:id="_ZU30IMAjEe6qf8oKgrYcHg" name="Le système doit proposer une interface à l'opérateur système.">
+        <nestedClassifier xmi:type="uml:Class" xmi:id="_fHX-QMAjEe6qf8oKgrYcHg" name="L'opérateur doit renseigner des commandes."/>
+        <nestedClassifier xmi:type="uml:Class" xmi:id="_nocAYMAjEe6qf8oKgrYcHg" name="L'opérateur doit pouvoir consulter l'état du système à tout moment."/>
+      </packagedElement>
     </packagedElement>
     <packagedElement xmi:type="uml:Package" xmi:id="_XTsKEMAkEe6qf8oKgrYcHg" name="Sequence Diagram">
       <packagedElement xmi:type="uml:Interaction" xmi:id="_Z8y6UMAkEe6qf8oKgrYcHg" name="Interaction1">
@@ -383,13 +383,13 @@
   <Requirements:Requirement xmi:id="_9AHP8MAgEe6qf8oKgrYcHg" base_NamedElement="_9ACXcMAgEe6qf8oKgrYcHg" id="1.1.4" text="Le système doit localiser les obstacles." base_Class="_9ACXcMAgEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_V0d6YMAhEe6qf8oKgrYcHg" base_NamedElement="_V0XMsMAhEe6qf8oKgrYcHg" id="1.1.1.1" text="Le système doit localiser avec une précision de 5 cm." base_Class="_V0XMsMAhEe6qf8oKgrYcHg"/>
   <Requirements:Refine xmi:id="_fD76oMAhEe6qf8oKgrYcHg" base_DirectedRelationship="_fDz-0MAhEe6qf8oKgrYcHg" base_Abstraction="_fDz-0MAhEe6qf8oKgrYcHg"/>
-  <Requirements:Requirement xmi:id="_ykTi8MAhEe6qf8oKgrYcHg" base_NamedElement="_ykQfoMAhEe6qf8oKgrYcHg" id="1.2" text="Le système doit livrer les colis." base_Class="_ykQfoMAhEe6qf8oKgrYcHg"/>
+  <Requirements:Requirement xmi:id="_ykTi8MAhEe6qf8oKgrYcHg" base_NamedElement="_ykQfoMAhEe6qf8oKgrYcHg" id="1.2" text="Le système doit livrer les colis avec des robots autonomes." base_Class="_ykQfoMAhEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_903RMMAhEe6qf8oKgrYcHg" base_NamedElement="_90wjgMAhEe6qf8oKgrYcHg" id="1.2.1" text="Les robots doivent se déplacer." base_Class="_90wjgMAhEe6qf8oKgrYcHg"/>
-  <Requirements:Requirement xmi:id="_Hl6UgMAiEe6qf8oKgrYcHg" base_NamedElement="_Hly_wMAiEe6qf8oKgrYcHg" id="1.2.2" text="Les robots doivent s'arrêter d'urgence." base_Class="_Hly_wMAiEe6qf8oKgrYcHg"/>
+  <Requirements:Requirement xmi:id="_Hl6UgMAiEe6qf8oKgrYcHg" base_NamedElement="_Hly_wMAiEe6qf8oKgrYcHg" id="1.2.2" text="Les robots doivent pouvoir s'arrêter d'urgence." base_Class="_Hly_wMAiEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_WQsG4MAiEe6qf8oKgrYcHg" base_NamedElement="_WQkyIMAiEe6qf8oKgrYcHg" id="1.2.3" text="Le système doit faire respecter les règles de déplacement aux robots." base_Class="_WQkyIMAiEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_hYrH8MAiEe6qf8oKgrYcHg" base_NamedElement="_hYjMIMAiEe6qf8oKgrYcHg" id="1.2.3.1" text="Le système doit faire éviter les obstacles aux robots." base_Class="_hYjMIMAiEe6qf8oKgrYcHg"/>
-  <Requirements:Requirement xmi:id="_G-7XkMAjEe6qf8oKgrYcHg" base_NamedElement="_G-0C0MAjEe6qf8oKgrYcHg" id="1.2.3.2" text="Le système doit vérifier la libre circulation dans une allée." base_Class="_G-0C0MAjEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_ZU_v8MAjEe6qf8oKgrYcHg" base_NamedElement="_ZU30IMAjEe6qf8oKgrYcHg" id="1.3" text="Le système doit proposer une interface à l'opérateur système." base_Class="_ZU30IMAjEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_fHfTAMAjEe6qf8oKgrYcHg" base_NamedElement="_fHX-QMAjEe6qf8oKgrYcHg" id="1.3.1" text="L'opérateur doit renseigner des commandes." base_Class="_fHX-QMAjEe6qf8oKgrYcHg"/>
   <Requirements:Requirement xmi:id="_noiuEMAjEe6qf8oKgrYcHg" base_NamedElement="_nocAYMAjEe6qf8oKgrYcHg" id="1.3.2" text="L'opérateur doit pouvoir consulter l'état du système à tout moment." base_Class="_nocAYMAjEe6qf8oKgrYcHg"/>
+  <Requirements:Requirement xmi:id="_ReaWIOBMEe6jGdBlVUQj_w" base_NamedElement="_ReAGcOBMEe6jGdBlVUQj_w" id="1.2.3.2" text="Le système doit vérifier la libre circulation dans une allée." base_Class="_ReAGcOBMEe6jGdBlVUQj_w"/>
 </xmi:XMI>
