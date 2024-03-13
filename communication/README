@@ -1,9 +1,13 @@
 EXPLICATION DES CODES DE COMMUNICATION
 
+- main_serveur.c
+
+Code principal qui tourne sur l'ordinateur. Il crée un processus pour la communication ("serveurTCP_bidiric.c") et un autre pour la simulation Python ("main.py")
+
 ***************************************
 - serveurTCP_bidiric.c :
 
-Code principal qui tourne sur l'ordinateur. Voici les étapes principales :
+Code de communication qui tourne sur l'ordinateur. Voici les étapes principales :
 
 1) Connexion effectuée avec chacun des robots
 2) Lit les commandes écrites dans "robot_target#.txt" (# = 0, 1 ou 2)
@@ -28,3 +32,6 @@ Code principal qui tourne sur la Raspberry Pi de chaque robot. Voici les étapes
 6) Envoie son état au serveur. Si l'état = 1, alors il remplace 1 par 0 dans "arrivee.txt"
 
 Les étapes 2 à 6 tournent en boucle
+
+
+Chaque fichier .txt est en fait une interface entre un code python et un code C
