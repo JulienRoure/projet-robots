@@ -99,6 +99,7 @@ int main() {
 	char fichierCommande[MAX_BUFFER_SIZE][NB_MAX_CONNECTIONS]; //Tableau contenant les fichiers avec commandes A ENVOYER aux robots
 	char etatsRobots[MAX_BUFFER_SIZE][NB_MAX_CONNECTIONS]; //Tableau contenant les fichiers avec les états des robots RECUs des robots
 	
+	char previousBufferEmission[MAX_BUFFER_SIZE];
     char bufferEmission[MAX_BUFFER_SIZE];
     char bufferReception[MAX_BUFFER_SIZE];
     pid_t pidFils[NB_MAX_CONNECTIONS]; //Permet de recuperer le pid du processus fils créé
