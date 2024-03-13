@@ -5,7 +5,7 @@
 
 int main() {
     pid_t pid_serveurTCP, pid_simulation;
-    char *simulation = "../Simulation/v2/main.py"; //mettre ../Simulation/v5/main.py quand Tom aura push
+    char *simulation = "../Simulation/v5/main.py"; //mettre ../Simulation/v5/main.py quand Tom aura push
 
     while (1) {
         // Création du processus pour le serveur TCP bidirectionnel
