@@ -36,10 +36,6 @@ def main():
                 robot.targets = [(4 + robot.id, 1)]
                 robot.current = ["fin"]
 
-            suite_coords(robot)
-
-            path_to_targets(robot)
-
             print("Robot : "+str(robot.id))
 
             print(commandes)
@@ -49,6 +45,8 @@ def main():
             print(robot.destination)
             print(robot.position)
             print(robot.current)
+
+            #récupérer robot_end et la position
 
             if tick % 50 == robot.id*10:
                 robot.dijkstra = True
@@ -63,6 +61,10 @@ def main():
                 robot.position_start = robot.position
                 if robot.path != []:
                     robot.angle = robot.path[0]*45
+
+            suite_coords(robot)
+
+            path_to_targets(robot)
                  
             if not robot.blocked and robot.targets_line != [] and robot.path != []:
                 with open("./fichiers_ecriture/robot_target"+str(robot.id)+".txt", "r+") as f:
