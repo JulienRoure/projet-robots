@@ -30,7 +30,7 @@ void ecrire_position(float x, float y, float addr) {
     fclose(fichier);
 }
 
-int main () {
+int tracker () {
     const char * ttyFileName;
     ttyFileName = DEFAULT_TTY_FILENAME;
 

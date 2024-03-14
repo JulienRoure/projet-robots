@@ -1,24 +1,11 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-
-#include <time.h>
-
-#include <sys/types.h>
-#include <sys/wait.h>
+#include "serveurTCP.h"
 
 #define MAX_BUFFER_SIZE 1024
 #define LOCALIP "127.0.0.1"
 #define LOCALPORT 3000
-#define READER_PORT 5000 // Serveur = lecteur, client = écrivain
-#define WRITER_PORT 5001 // Serveur = écrivain, client = lecteur
-
 #define NB_MAX_CONNECTIONS 3
 
 #define CHECKERROR(var,val,msg)     if (var==val) {perror(msg); exit(EXIT_FAILURE);}
-
 #define CHECKERROR_SOCK(var,val,msg, socket)     if (var==val) {perror(msg); close(socket); exit(EXIT_FAILURE);}
 
 void ecrireFichier(char *nomFichier, char *message) {
@@ -91,7 +78,7 @@ void attendre_secondes(int secondesAttente) {
 	sleep(secondesAttente);
 }
 
-int main() {
+int serveurTCP() {
     int socketEcoute, socketDialogue[NB_MAX_CONNECTIONS];
     struct sockaddr_in serverAddr, clientAddr[NB_MAX_CONNECTIONS];
     socklen_t addrSize = sizeof(struct sockaddr_in);

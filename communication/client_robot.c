@@ -1,16 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-#include <arpa/inet.h>
-#include <sys/socket.h>
+#include "client_robot.h"
 
 #define MAX_BUFFER_SIZE 1024
-
 #define LOCAL_PORT 6000
-
-
-
 
 /* -------------------------------- */
 /* ----- FONCTIONS D'ECRITURE ----- */
@@ -87,7 +78,7 @@ void lireFichier(char* nom_fichier, char *buffer) {
     return;
 }
 
-int main(int argc, char *argv[]) {
+int client_robot(int argc, char *argv[]) {
     if (argc != 3) {
         fprintf(stderr, "Usage: %s <adresse IP du serveur> <port>\n", argv[0]);
         exit(EXIT_FAILURE);

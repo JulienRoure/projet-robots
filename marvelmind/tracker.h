@@ -17,6 +17,6 @@ void CtrlHandler(int signum);
 
 void semCallback();
 
-int main(void);
+int tracker(void);
 
 #endif /* TRACKER_H */
