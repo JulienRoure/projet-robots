@@ -180,20 +180,20 @@ def position_to_case(robot, pos = None):
 def around(i, j):
     if i == 0 and j == 0:
         return [(0, 1), (1, 0), (1, 1)]
-    elif i == 0 and j == 9:
-        return [(0, 8), (1, 9), (1, 8)]
-    elif i == 9 and j == 0:
-        return [(8, 0), (9, 1), (8, 1)]
-    elif i == 9 and j == 9:
-        return [(8, 9), (9, 8), (8, 8)]
+    elif i == 0 and j == 8:
+        return [(0, 7), (1, 8), (1, 7)]
+    elif i == 8 and j == 0:
+        return [(7, 0), (8, 1), (7, 1)]
+    elif i == 8 and j == 8:
+        return [(7, 8), (8, 7), (7, 7)]
     elif i == 0:
         return [(0, j-1), (1, j), (0, j+1), (1, j-1), (1, j+1)]
-    elif i == 9:
-        return [(9, j-1), (8, j), (9, j+1), (8, j-1), (8, j+1)]
+    elif i == 8:
+        return [(8, j-1), (7, j), (8, j+1), (7, j-1), (7, j+1)]
     elif j == 0:
         return [(i-1, 0), (i, 1), (i+1, 0), (i-1, 1), (i+1, 1)]
-    elif j == 9:
-        return [(i-1, 9), (i, 8), (i+1, 9), (i-1, 8), (i+1, 8)]
+    elif j == 8:
+        return [(i-1, 8), (i, 7), (i+1, 8), (i-1, 7), (i+1, 7)]
     else:
         return [(i-1, j), (i, j+1), (i+1, j), (i, j-1), (i-1, j-1), (i-1, j+1), (i+1, j+1), (i+1, j-1)]
 
@@ -213,7 +213,7 @@ def impossible_move(robot, start, end):
     return True
 
 def dijkstra(robot, reach):
-    n = 10
+    n = 9
     virtual = False
     map_real = robot.map
     G = np.array([[99 for i in range(n)] for j in range(n)])
@@ -223,16 +223,15 @@ def dijkstra(robot, reach):
                 G[i][j] = 100
     if G[reach[0], reach[1]] == 100:
         robot.can_move = False
-        robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+        robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [1, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                             [0, 0, 0, 0, 0, 1, 1, 1, 1],
+                             [0, 0, 0, 0, 0, 0, 0, 0, 0],])
         virtual = True
     G[reach[0], reach[1]] = 0
     here = reach
@@ -407,16 +406,15 @@ def coords_commandes(robot, commandes):
     return new_commandes, current
 
 def update_map(robot, robots):
-    robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 1, 0, 0, 0, 0, 1, 1, 1, 1],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 1, 1, 1, 1],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-                            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]])
+    robot.map = np.array([[0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [1, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [1, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],
+                            [0, 0, 0, 0, 0, 1, 1, 1, 1],
+                            [0, 0, 0, 0, 0, 0, 0, 0, 0],])
     for other_robot in robots:
         if other_robot != robot:
             pos = position_to_case(other_robot)
@@ -427,28 +425,28 @@ def update_map(robot, robots):
                 direction = ind_map(path)
                 count = 1
                 pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
-                if pos_start[0] < 10 and pos_start[1] < 10 and pos_start[0] >= 0 and pos_start[1] >= 0: 
+                if pos_start[0] < 9 and pos_start[1] < 9 and pos_start[0] >= 0 and pos_start[1] >= 0: 
                     robot.map[pos_start[0]][pos_start[1]] = 1
                 while count < len(other_robot.path) and path == other_robot.path[count]:
                     pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
-                    if pos_start[0] < 10 and pos_start[1] < 10 and pos_start[0] >= 0 and pos_start[1] >= 0:
+                    if pos_start[0] < 9 and pos_start[1] < 9 and pos_start[0] >= 0 and pos_start[1] >= 0:
                         robot.map[pos_start[0]][pos_start[1]] = 1
                     count += 1
                 pos_start = position_to_case(other_robot, other_robot.position_start)
                 while pos != pos_start:
                     robot.map[pos_start[0], pos_start[1]] = 0
                     pos_start = (pos_start[0] + direction[0], pos_start[1] + direction[1])
-            if other_robot.destination[1] >= 5:
+            if other_robot.destination[1] >= 4:
                 line = other_robot.destination[0]
                 robot.map[line][5] = 1
                 robot.map[line][6] = 1
                 robot.map[line][7] = 1
                 robot.map[line][8] = 1
-                robot.map[line][9] = 1
-            if pos[1] >= 5 and pos[0] != 9:
+                robot.map[line][4] = 1
+            if pos[1] >= 4 and pos[0] != 8:
                 line = pos[0]
                 robot.map[line][5] = 1
                 robot.map[line][6] = 1
                 robot.map[line][7] = 1
                 robot.map[line][8] = 1
-                robot.map[line][9] = 1
+                robot.map[line][4] = 1

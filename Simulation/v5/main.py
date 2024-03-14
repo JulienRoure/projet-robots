@@ -7,10 +7,10 @@ from time import sleep
 def main():
     tick = 0
     visu_robot = 0
-    robot1 = Robot("robot1.png", (150, 550), 0, 1)
-    robot2 = Robot("robot2.png", (150, 650), 0, 2)
-    robot3 = Robot("robot3.png", (150, 750), 0, 3)
-    robots = [robot1, robot2, robot3]
+    robot1 = Robot("robot1.png", (50, 550), 0, 1)
+    robot2 = Robot("robot2.png", (50, 650), 0, 2)
+    robot3 = Robot("robot3.png", (50, 750), 0, 3)
+    robots = [robot1]
     running = True
     robot_end = 0
 
@@ -34,7 +34,7 @@ def main():
                 robot.targets, robot.current = coords_commandes(robot, commandes)
                 robot.decharge = False
             if commandes == [] and robot.targets == []:
-                robot.targets = [(4 + robot.id, 1)]
+                robot.targets = [(4 + robot.id, 0)]
                 robot.current = ["fin"]
 
             print("Robot : "+str(robot.id))
@@ -47,11 +47,13 @@ def main():
             print(robot.position)
             print(robot.current)
 
+            """
             with open("../marvelmind/position_robot"+str(robot.id-1), "r") as f:
                 lines = f.readlines()
                 if lines != []:
                     robot.position = (float(lines[0].split(" ")[0]), float(lines[0].split(" ")[1]))
-
+            """
+                    
             with open("../Simulation/v5/fichiers_lecture/etat_robot"+str(robot.id-1)+".txt", "r+") as f:
                 lines = f.readlines()
                 if lines != []:
@@ -67,6 +69,7 @@ def main():
                 robot.end_test = False
                 if robot.path != []:
                     robot.pos_map = robot.targets_line.pop(0)
+                robot.position = (robot.pos_map[1]*100+50, robot.pos_map[0]*100+50)
                 if robot.pos_map == robot.destination:
                     robot.end_chemin = True
                     robot.path = []
