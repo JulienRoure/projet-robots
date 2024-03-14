@@ -47,16 +47,19 @@ def main():
             print(robot.position)
             print(robot.current)
 
-            #récupérer robot_end et la position
+            with open("../marvelmind/position_robot"+str(robot.id-1), "r") as f:
+                lines = f.readlines()
+                if lines != []:
+                    robot.position = (float(lines[0].split(" ")[0]), float(lines[0].split(" ")[1]))
 
             with open("../Simulation/v5/fichiers_lecture/etat_robot"+str(robot.id-1)+".txt", "r+") as f:
                 lines = f.readlines()
                 if lines != []:
                     robot_end = int(lines[0])
                 if robot_end:
-                	lines[0] = '0'
-                	f.seek(0)
-                	f.writelines(lines)
+                    lines[0] = '0'
+                    f.seek(0)
+                    f.writelines(lines)
 
             if robot_end:
                 robot.dijkstra = True
@@ -64,7 +67,6 @@ def main():
                 robot.end_test = False
                 if robot.path != []:
                     robot.pos_map = robot.targets_line.pop(0)
-                robot.position = (robot.pos_map[1]*100+50, robot.pos_map[0]*100+50)
                 if robot.pos_map == robot.destination:
                     robot.end_chemin = True
                     robot.path = []
@@ -80,12 +82,12 @@ def main():
                 with open("../Simulation/v5/fichiers_ecriture/robot_target"+str(robot.id-1)+".txt", "r+") as f:
                     lines = f.readlines()
                     if lines != []:
-                        if lines[0] != "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")":
-                            lines[0] = "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")"
+                        if lines[0] != "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".1f")+")":
+                            lines[0] = "("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".1f")+")"
                             f.seek(0)
                             f.writelines(lines)
                     else:
-                        f.write("("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".2f")+")")
+                        f.write("("+str(float(robot.targets_line[0][0]))+", "+str(float(robot.targets_line[0][1]))+", "+format(robot.path[0]*45*2*pi/360, ".1f")+")")
 
 if __name__ == "__main__":
     main()
